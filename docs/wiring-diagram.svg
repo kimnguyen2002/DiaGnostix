@@ -1,0 +1,259 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 860" width="1120" height="860" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">DiaGnostix wiring diagram for the ESP32-S3-DevKitC-1</title>
+<desc id="d">AD8232 OUTPUT, LO+ and LO- to GPIO4, GPIO5, GPIO6; MAX30102 and BME280 on I2C SDA GPIO8 and SCL GPIO9; NTC divider to GPIO1; alert LED with 220 ohm resistor on GPIO15; optional buzzer on GPIO16; all modules powered from 3.3 V.</desc>
+<rect width="1120" height="860" fill="#ffffff"/>
+<text x="40" y="46" font-size="22" fill="#0b0b0b" text-anchor="start" font-weight="bold" >DiaGnostix · wiring for the ESP32-S3-DevKitC-1</text>
+<text x="40" y="70" font-size="13" fill="#52514e" text-anchor="start" font-weight="normal" >All modules run from 3.3 V. Every 3V3 tag connects to the board’s 3V3 pin and every GND tag to a GND pin.</text>
+<rect x="637" y="116" width="226" height="672" rx="14" fill="#1f2b38" stroke="#0f1720" stroke-width="2"/>
+<rect x="724" y="132" width="52" height="262" rx="4" fill="#33445a" stroke="#7d8da3" stroke-width="1.2"/>
+<text x="750" y="263" font-size="11.5" fill="#e6ebf2" text-anchor="middle" transform="rotate(-90 750 259)">ESP32-S3-WROOM-1</text>
+<text x="661" y="130" font-size="11" fill="#9fb0c4" text-anchor="start" font-weight="bold" >J1</text>
+<text x="839" y="130" font-size="11" fill="#9fb0c4" text-anchor="end" font-weight="bold" >J3</text>
+<text x="750" y="768" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold" >ESP32-S3-DevKitC-1</text>
+<circle cx="655" cy="150" r="6.5" fill="#d13b3b" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="154" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">3V3</text>
+<circle cx="655" cy="178" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="182" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">3V3</text>
+<circle cx="655" cy="206" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="210" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">RST</text>
+<circle cx="655" cy="234" r="6.5" fill="#e0602a" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="238" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO4</text>
+<circle cx="655" cy="262" r="6.5" fill="#e0602a" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="266" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO5</text>
+<circle cx="655" cy="290" r="6.5" fill="#e0602a" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="294" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO6</text>
+<circle cx="655" cy="318" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="322" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO7</text>
+<circle cx="655" cy="346" r="6.5" fill="#c2406f" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="350" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO15</text>
+<circle cx="655" cy="374" r="6.5" fill="#898781" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="378" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO16</text>
+<circle cx="655" cy="402" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="406" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO17</text>
+<circle cx="655" cy="430" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="434" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO18</text>
+<circle cx="655" cy="458" r="6.5" fill="#2a78d6" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="462" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO8</text>
+<circle cx="655" cy="486" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="490" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO3</text>
+<circle cx="655" cy="514" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="518" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO46</text>
+<circle cx="655" cy="542" r="6.5" fill="#4a3aa7" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="546" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO9</text>
+<circle cx="655" cy="570" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="574" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO10</text>
+<circle cx="655" cy="598" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="602" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO11</text>
+<circle cx="655" cy="626" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="630" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO12</text>
+<circle cx="655" cy="654" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="658" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO13</text>
+<circle cx="655" cy="682" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="686" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO14</text>
+<circle cx="655" cy="710" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="668" y="714" font-size="11.5" fill="#8f9db0" text-anchor="start" font-weight="normal" font-family="Menlo, Consolas, monospace">5V</text>
+<circle cx="655" cy="738" r="6.5" fill="#0b0b0b" stroke="#ffffff" stroke-width="1.5"/>
+<text x="668" y="742" font-size="11.5" fill="#ffffff" text-anchor="start" font-weight="bold" font-family="Menlo, Consolas, monospace">GND</text>
+<circle cx="845" cy="150" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="154" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GND</text>
+<circle cx="845" cy="178" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="182" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">TX</text>
+<circle cx="845" cy="206" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="210" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">RX</text>
+<circle cx="845" cy="234" r="6.5" fill="#0f8a3c" stroke="#ffffff" stroke-width="1.5"/>
+<text x="832" y="238" font-size="11.5" fill="#ffffff" text-anchor="end" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO1</text>
+<circle cx="845" cy="262" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="266" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO2</text>
+<circle cx="845" cy="290" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="294" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO42</text>
+<circle cx="845" cy="318" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="322" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO41</text>
+<circle cx="845" cy="346" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="350" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO40</text>
+<circle cx="845" cy="374" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="378" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO39</text>
+<circle cx="845" cy="402" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="406" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO38</text>
+<circle cx="845" cy="430" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="434" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO37</text>
+<circle cx="845" cy="458" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="462" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO36</text>
+<circle cx="845" cy="486" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="490" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO35</text>
+<circle cx="845" cy="514" r="6.5" fill="#898781" stroke="#ffffff" stroke-width="1.5"/>
+<text x="832" y="518" font-size="11.5" fill="#ffffff" text-anchor="end" font-weight="bold" font-family="Menlo, Consolas, monospace">GPIO0</text>
+<circle cx="845" cy="542" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="546" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO45</text>
+<circle cx="845" cy="570" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="574" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO48</text>
+<circle cx="845" cy="598" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="602" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO47</text>
+<circle cx="845" cy="626" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="630" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO21</text>
+<circle cx="845" cy="654" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="658" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO20</text>
+<circle cx="845" cy="682" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="686" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GPIO19</text>
+<circle cx="845" cy="710" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="714" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GND</text>
+<circle cx="845" cy="738" r="5" fill="#c9a227" stroke="none" stroke-width="1.5"/>
+<text x="832" y="742" font-size="11.5" fill="#8f9db0" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GND</text>
+<rect x="694" y="784" width="32" height="20" rx="3" fill="#b9c2cc" stroke="#6b7785"/>
+<text x="710" y="820" font-size="11" fill="#52514e" text-anchor="middle" font-weight="normal" >UART</text>
+<rect x="774" y="784" width="32" height="20" rx="3" fill="#b9c2cc" stroke="#6b7785"/>
+<text x="790" y="820" font-size="11" fill="#52514e" text-anchor="middle" font-weight="normal" >USB</text>
+<path d="M655,150 H612" fill="none" stroke="#d13b3b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="572" y="140" width="40" height="20" rx="4" fill="#fdecec" stroke="#d13b3b" stroke-width="1.6"/>
+<text x="592" y="154.5" font-size="11" fill="#a32020" text-anchor="middle" font-weight="bold" >3V3</text>
+<text x="592" y="132" font-size="10.5" fill="#898781" text-anchor="middle" font-weight="normal" >3.3 V supply</text>
+<path d="M655,738 H612" fill="none" stroke="#0b0b0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="572" y="728" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="592" y="742.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<rect x="160" y="152" width="180" height="200" rx="9" fill="#f5f7fa" stroke="#3d4b5c" stroke-width="1.6"/>
+<text x="172" y="176" font-size="15" fill="#0b0b0b" text-anchor="start" font-weight="bold" >AD8232</text>
+<text x="172" y="194" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >ECG front end</text>
+<text x="326" y="182" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">3.3V</text>
+<circle cx="340" cy="178" r="5" fill="#d13b3b" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="210" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GND</text>
+<circle cx="340" cy="206" r="5" fill="#0b0b0b" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="238" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">OUTPUT</text>
+<circle cx="340" cy="234" r="5" fill="#e0602a" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="266" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">LO+</text>
+<circle cx="340" cy="262" r="5" fill="#e0602a" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="294" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">LO−</text>
+<circle cx="340" cy="290" r="5" fill="#e0602a" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="322" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">SDN</text>
+<circle cx="340" cy="318" r="5" fill="#b8c0cc" stroke="#3d4b5c" stroke-width="1"/>
+<path d="M340,178 H370" fill="none" stroke="#d13b3b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="370" y="168" width="40" height="20" rx="4" fill="#fdecec" stroke="#d13b3b" stroke-width="1.6"/>
+<text x="390" y="182.5" font-size="11" fill="#a32020" text-anchor="middle" font-weight="bold" >3V3</text>
+<path d="M340,206 H370" fill="none" stroke="#0b0b0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="370" y="196" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="390" y="210.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<path d="M340,234 H655" fill="none" stroke="#e0602a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M340,262 H655" fill="none" stroke="#e0602a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M340,290 H655" fill="none" stroke="#e0602a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="366" y="322" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >not connected</text>
+<path d="M160,262 H134" fill="none" stroke="#6b7785" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M134,262 L112,218" fill="none" stroke="#6b7785" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="104" cy="218" r="9" fill="#d13b3b" stroke="#3d4b5c" stroke-width="1"/>
+<text x="88" y="222" font-size="12" fill="#0b0b0b" text-anchor="end" font-weight="bold" >RA</text>
+<path d="M134,262 L112,262" fill="none" stroke="#6b7785" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="104" cy="262" r="9" fill="#e3b100" stroke="#3d4b5c" stroke-width="1"/>
+<text x="88" y="266" font-size="12" fill="#0b0b0b" text-anchor="end" font-weight="bold" >LA</text>
+<path d="M134,262 L112,306" fill="none" stroke="#6b7785" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="104" cy="306" r="9" fill="#1f9d55" stroke="#3d4b5c" stroke-width="1"/>
+<text x="88" y="310" font-size="12" fill="#0b0b0b" text-anchor="end" font-weight="bold" >RL</text>
+<text x="40" y="340" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >3-lead electrode cable</text>
+<path d="M655,346 H596" fill="none" stroke="#c2406f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="548" y="339" width="48" height="14" rx="2" fill="#ffffff" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="572" y="332" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="normal" >220 Ω</text>
+<path d="M548,346 H520" fill="none" stroke="#c2406f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M520,336 L520,356 L498,346 Z" fill="#c2406f" stroke="#0b0b0b" stroke-width="1.2"/>
+<path d="M496,336 V356" stroke="#0b0b0b" stroke-width="2"/>
+<path d="M508,333 l6,-9 m-4,1 l4,-1 l-0.5,4" fill="none" stroke="#c2406f" stroke-width="1.4"/>
+<path d="M516,333 l6,-9 m-4,1 l4,-1 l-0.5,4" fill="none" stroke="#c2406f" stroke-width="1.4"/>
+<path d="M496,346 H455" fill="none" stroke="#0b0b0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="415" y="336" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="435" y="350.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<text x="508" y="316" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="normal" >alert LED</text>
+<path d="M655,374 H572" fill="none" stroke="#898781" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<circle cx="560" cy="374" r="11" fill="#ffffff" stroke="#898781" stroke-width="1.6"/>
+<text x="560" y="378" font-size="9.5" fill="#52514e" text-anchor="middle" font-weight="bold" >BZ</text>
+<path d="M549,374 H530" fill="none" stroke="#898781" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<rect x="490" y="364" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="510" y="378.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<text x="448" y="378" font-size="11" fill="#898781" text-anchor="end" font-weight="normal" >buzzer (optional)</text>
+<rect x="160" y="400" width="180" height="124" rx="9" fill="#f5f7fa" stroke="#3d4b5c" stroke-width="1.6"/>
+<text x="172" y="424" font-size="15" fill="#0b0b0b" text-anchor="start" font-weight="bold" >MAX30102</text>
+<text x="172" y="442" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >PPG / SpO₂</text>
+<text x="326" y="418" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">VIN</text>
+<circle cx="340" cy="414" r="5" fill="#d13b3b" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="440" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GND</text>
+<circle cx="340" cy="436" r="5" fill="#0b0b0b" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="462" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">SDA</text>
+<circle cx="340" cy="458" r="5" fill="#2a78d6" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="484" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">SCL</text>
+<circle cx="340" cy="480" r="5" fill="#4a3aa7" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="506" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">INT</text>
+<circle cx="340" cy="502" r="5" fill="#b8c0cc" stroke="#3d4b5c" stroke-width="1"/>
+<path d="M340,414 H370" fill="none" stroke="#d13b3b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="370" y="404" width="40" height="20" rx="4" fill="#fdecec" stroke="#d13b3b" stroke-width="1.6"/>
+<text x="390" y="418.5" font-size="11" fill="#a32020" text-anchor="middle" font-weight="bold" >3V3</text>
+<path d="M340,436 H370" fill="none" stroke="#0b0b0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="370" y="426" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="390" y="440.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<text x="352" y="506" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >NC</text>
+<path d="M340,458 H655" fill="none" stroke="#2a78d6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M340,480 H553 A7,7 0 0 1 567,480 H600 V542 H655" fill="none" stroke="#4a3aa7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="160" y="558" width="180" height="118" rx="9" fill="#f5f7fa" stroke="#3d4b5c" stroke-width="1.6"/>
+<text x="172" y="582" font-size="15" fill="#0b0b0b" text-anchor="start" font-weight="bold" >BME280</text>
+<text x="172" y="600" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >room sensor</text>
+<text x="326" y="588" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">VIN</text>
+<circle cx="340" cy="584" r="5" fill="#d13b3b" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="610" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">GND</text>
+<circle cx="340" cy="606" r="5" fill="#0b0b0b" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="632" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">SDA</text>
+<circle cx="340" cy="628" r="5" fill="#2a78d6" stroke="#3d4b5c" stroke-width="1"/>
+<text x="326" y="654" font-size="12" fill="#52514e" text-anchor="end" font-weight="normal" font-family="Menlo, Consolas, monospace">SCL</text>
+<circle cx="340" cy="650" r="5" fill="#4a3aa7" stroke="#3d4b5c" stroke-width="1"/>
+<path d="M340,584 H370" fill="none" stroke="#d13b3b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="370" y="574" width="40" height="20" rx="4" fill="#fdecec" stroke="#d13b3b" stroke-width="1.6"/>
+<text x="390" y="588.5" font-size="11" fill="#a32020" text-anchor="middle" font-weight="bold" >3V3</text>
+<path d="M340,606 H370" fill="none" stroke="#0b0b0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="370" y="596" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="390" y="610.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<path d="M340,628 H560 V458" fill="none" stroke="#2a78d6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M340,650 H600 V542" fill="none" stroke="#4a3aa7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="560" cy="458" r="4.5" fill="#2a78d6"/>
+<circle cx="600" cy="542" r="4.5" fill="#4a3aa7"/>
+<text x="554" y="672" font-size="11" fill="#898781" text-anchor="end" font-weight="normal" >shared I²C bus (0x57, 0x76)</text>
+<path d="M845,234 H940" fill="none" stroke="#0f8a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="940" cy="234" r="4.5" fill="#0f8a3c"/>
+<path d="M940,234 V212" fill="none" stroke="#0f8a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="933" y="168" width="14" height="44" rx="2" fill="#ffffff" stroke="#0b0b0b" stroke-width="1.6"/>
+<path d="M940,168 V152" fill="none" stroke="#d13b3b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="920" y="132" width="40" height="20" rx="4" fill="#fdecec" stroke="#d13b3b" stroke-width="1.6"/>
+<text x="940" y="146.5" font-size="11" fill="#a32020" text-anchor="middle" font-weight="bold" >3V3</text>
+<text x="956" y="188" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >10 kΩ, 1 %</text>
+<path d="M940,234 V258" fill="none" stroke="#0f8a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="933" y="258" width="14" height="44" rx="2" fill="#ffffff" stroke="#0b0b0b" stroke-width="1.6"/>
+<path d="M924,308 L956,252 m-8,0 h8" fill="none" stroke="#0b0b0b" stroke-width="1.4"/>
+<path d="M940,302 V322" fill="none" stroke="#0b0b0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="920" y="322" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="940" y="336.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<text x="960" y="274" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >NTC 10 kΩ, β 3950</text>
+<text x="960" y="290" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >body temperature</text>
+<circle cx="890" cy="234" r="4.5" fill="#0f8a3c"/>
+<path d="M890,234 V268" fill="none" stroke="#0f8a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<path d="M877,268 h26 M877,276 h26" stroke="#0b0b0b" stroke-width="2.2"/>
+<path d="M890,276 V322" fill="none" stroke="#0b0b0b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<rect x="870" y="322" width="40" height="20" rx="4" fill="#ececec" stroke="#0b0b0b" stroke-width="1.6"/>
+<text x="890" y="336.5" font-size="11" fill="#0b0b0b" text-anchor="middle" font-weight="bold" >GND</text>
+<text x="872" y="362" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >100 nF</text>
+<text x="872" y="376" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >(optional)</text>
+<path d="M845,514 H882" fill="none" stroke="#898781" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<text x="890" y="511" font-size="12" fill="#52514e" text-anchor="start" font-weight="bold" >BOOT button (on the board)</text>
+<text x="890" y="528" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >press: start a measurement</text>
+<text x="890" y="543" font-size="11" fill="#898781" text-anchor="start" font-weight="normal" >or acknowledge an alert</text>
+<rect x="40" y="712" width="520" height="124" rx="10" fill="#fafafa" stroke="#e1e0d9"/>
+<text x="56" y="736" font-size="13" fill="#0b0b0b" text-anchor="start" font-weight="bold" >Legend</text>
+<path d="M56,758 h28" fill="none" stroke="#e0602a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="94" y="762" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >ECG: OUTPUT, LO+, LO−</text>
+<path d="M56,779 h28" fill="none" stroke="#2a78d6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="94" y="783" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >I²C SDA</text>
+<path d="M56,800 h28" fill="none" stroke="#4a3aa7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="94" y="804" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >I²C SCL</text>
+<path d="M306,758 h28" fill="none" stroke="#0f8a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="344" y="762" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >NTC divider (analog)</text>
+<path d="M306,779 h28" fill="none" stroke="#c2406f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="344" y="783" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >alert LED</text>
+<path d="M306,800 h28" fill="none" stroke="#898781" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<text x="344" y="804" font-size="11.5" fill="#52514e" text-anchor="start" font-weight="normal" >optional / on-board</text>
+<text x="56" y="826" font-size="10.5" fill="#898781" text-anchor="start" font-weight="normal" >Pins are set in firmware/DiaGnostix/config.h; check your board’s silkscreen.</text>
+<text x="885" y="654" font-size="12.5" fill="#0b0b0b" text-anchor="start" font-weight="bold" >Safety</text>
+<text x="885" y="672" font-size="11" fill="#52514e" text-anchor="start" font-weight="normal" >With electrodes attached, power the</text>
+<text x="885" y="687" font-size="11" fill="#52514e" text-anchor="start" font-weight="normal" >board from a battery or a laptop</text>
+<text x="885" y="702" font-size="11" fill="#52514e" text-anchor="start" font-weight="normal" >running on battery, never from a</text>
+<text x="885" y="717" font-size="11" fill="#52514e" text-anchor="start" font-weight="normal" >mains adapter.</text>
+</svg>
