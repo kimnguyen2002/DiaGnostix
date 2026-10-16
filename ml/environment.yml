@@ -1,0 +1,26 @@
+# conda env create -f environment.yml && conda activate diagnostix
+# python -m ipykernel install --user --name diagnostix --display-name "Python 3.11 (diagnostix)"
+name: diagnostix
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy<2
+  - pandas
+  - scipy
+  - scikit-learn=1.5
+  - lightgbm
+  - xgboost
+  - optuna
+  - shap
+  - matplotlib
+  - seaborn
+  - statsmodels
+  - pyarrow
+  - joblib
+  - ipykernel
+  - nbconvert
+  - aiohttp          # tools/mock_device.py (device simulator for the app)
+  - pip
+  - pip:
+      - tensorflow==2.15.1   # Keras 2 -> native .h5, stable TFLite converter
