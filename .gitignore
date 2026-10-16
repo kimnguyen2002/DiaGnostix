@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+
+# Datasets are downloaded separately (see README, "Data")
+data/
+
+# Regenerated analysis caches
+ml/cache/
+ml/outputs_fast/
+ml/outputs/deploy/parity_test/
+*.log
+
+# Firmware build outputs and credentials
+firmware/test/test_dsp
+firmware/test/test_ecg
+firmware/DiaGnostixECG/secrets.h
+build/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
