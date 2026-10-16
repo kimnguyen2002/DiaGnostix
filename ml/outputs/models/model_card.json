@@ -1,0 +1,180 @@
+{
+ "name": "DiaGnostix-ECG prediabetes/diabetes risk models",
+ "version": "2.0.0",
+ "date": "2026-10-17",
+ "intended_use": "Pre-test triage of adults: flag those whose 10-s resting lead-I ECG and profile suggest impaired glucose metabolism and advise a laboratory FPG/HbA1c test. Not a diagnostic device.",
+ "not_intended_for": [
+  "diagnosis of diabetes",
+  "glucose monitoring or insulin dosing",
+  "children or pregnant women",
+  "people with pacemakers, atrial fibrillation or other arrhythmias (not evaluated)"
+ ],
+ "endpoint": "FPG>=110 mg/dL or HbA1c>=6.0 % or diabetes treatment (Koga et al. 2025)",
+ "training_data": "Koga et al. 2025 (Zenodo 16416031) development set, n=15090",
+ "acquisition": "AD8232 lead I (RA right wrist, LA left wrist, RL right leg) -> ESP32-S3 ADC1 GPIO4, 500 Hz, 10-s window, amplitudes in uV",
+ "primary_input_set": "ECG + profile",
+ "models": {
+  "primary": {
+   "family": "Logistic regression",
+   "inputs": [
+    "mean_rr_s",
+    "sd_rr_s",
+    "mean_r_uv",
+    "sd_r_uv",
+    "mean_pp_s",
+    "sd_pp_s",
+    "mean_p_uv",
+    "sd_p_uv",
+    "mean_tt_s",
+    "sd_tt_s",
+    "mean_t_uv",
+    "sd_t_uv",
+    "mean_qq_s",
+    "sd_qq_s",
+    "mean_q_uv",
+    "sd_q_uv",
+    "mean_ss_s",
+    "sd_ss_s",
+    "mean_s_uv",
+    "sd_s_uv",
+    "qrs_mean_ms",
+    "qrs_sd_ms",
+    "rmssd_ms",
+    "hr_sd_bpm",
+    "hr_median_bpm",
+    "hr_min_bpm",
+    "hr_max_bpm",
+    "hr_mean_bpm",
+    "pr_peak_ms",
+    "qt_peak_ms",
+    "qtc_peak_ms",
+    "t_r_ratio",
+    "age",
+    "male_sex",
+    "BMI"
+   ],
+   "used_when": "profile entered and AD8232 gain calibrated",
+   "oof_auroc": 0.8450513750209182,
+   "internal_test_auroc": [
+    0.8783607622250994,
+    0.8533535797089526,
+    0.9033679447412462
+   ]
+  },
+  "fallback": {
+   "family": "Logistic regression",
+   "inputs": [
+    "mean_rr_s",
+    "sd_rr_s",
+    "mean_pp_s",
+    "sd_pp_s",
+    "mean_tt_s",
+    "sd_tt_s",
+    "mean_qq_s",
+    "sd_qq_s",
+    "mean_ss_s",
+    "sd_ss_s",
+    "qrs_mean_ms",
+    "qrs_sd_ms",
+    "rmssd_ms",
+    "hr_sd_bpm",
+    "hr_median_bpm",
+    "hr_min_bpm",
+    "hr_max_bpm",
+    "hr_mean_bpm",
+    "pr_peak_ms",
+    "qt_peak_ms",
+    "qtc_peak_ms",
+    "t_r_ratio",
+    "age",
+    "male_sex",
+    "BMI"
+   ],
+   "used_when": "profile entered, AD8232 gain not calibrated",
+   "oof_auroc": 0.8436585039326157,
+   "internal_test_auroc": [
+    0.8757179784929014,
+    0.8504688910406878,
+    0.9009670659451151
+   ]
+  },
+  "ecg_only": {
+   "family": "LightGBM (compact)",
+   "inputs": [
+    "mean_rr_s",
+    "sd_rr_s",
+    "mean_r_uv",
+    "sd_r_uv",
+    "mean_pp_s",
+    "sd_pp_s",
+    "mean_p_uv",
+    "sd_p_uv",
+    "mean_tt_s",
+    "sd_tt_s",
+    "mean_t_uv",
+    "sd_t_uv",
+    "mean_qq_s",
+    "sd_qq_s",
+    "mean_q_uv",
+    "sd_q_uv",
+    "mean_ss_s",
+    "sd_ss_s",
+    "mean_s_uv",
+    "sd_s_uv",
+    "qrs_mean_ms",
+    "qrs_sd_ms",
+    "rmssd_ms",
+    "hr_sd_bpm",
+    "hr_median_bpm",
+    "hr_min_bpm",
+    "hr_max_bpm",
+    "hr_mean_bpm",
+    "pr_peak_ms",
+    "qt_peak_ms",
+    "qtc_peak_ms",
+    "t_r_ratio"
+   ],
+   "used_when": "no profile entered (privacy mode), gain calibrated",
+   "oof_auroc": 0.7836211859206784,
+   "internal_test_auroc": [
+    0.8454460921059072,
+    0.8128079827839406,
+    0.8780842014278737
+   ]
+  }
+ },
+ "performance_primary": {
+  "internal_test_high_tier": {
+   "sensitivity": 0.8231292517006803,
+   "specificity": 0.76324395029431,
+   "PPV": 0.2505175983436853,
+   "NPV": 0.9782062028499581
+  },
+  "internal_test_elevated_or_high": {
+   "sensitivity": 0.9183673469387755,
+   "specificity": 0.6245912361020275,
+   "PPV": 0.19040902679830748,
+   "NPV": 0.9875904860392968
+  }
+ },
+ "performance_ecg_only_external": {
+  "auroc": [
+   0.7568658979789264,
+   0.7317409849445641,
+   0.7819908110132888
+  ],
+  "high_tier": {
+   "sensitivity": 0.7377049180327869,
+   "specificity": 0.6516746411483254,
+   "PPV": 0.27054108216432865,
+   "NPV": 0.934156378600823
+  }
+ },
+ "limitations": [
+  "Japanese check-up cohorts only",
+  "simulated AD8232/ESP32-S3 front-end; no recordings from the physical device yet",
+  "composite endpoint includes diabetes; no OGTT",
+  "external validation possible for the ECG-only model only",
+  "requires local recalibration where prevalence or criteria differ (e.g., Taiwan, ADA)"
+ ]
+}

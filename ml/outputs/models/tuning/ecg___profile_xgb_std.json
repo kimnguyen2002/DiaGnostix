@@ -1,0 +1,220 @@
+{
+ "kind": "xgb",
+ "space": "full",
+ "best_params": {
+  "n_estimators": 450,
+  "learning_rate": 0.022391800944065225,
+  "max_depth": 2,
+  "min_child_weight": 1.0671470195205799,
+  "subsample": 0.564377917582576,
+  "colsample_bytree": 0.5052720166358927,
+  "reg_lambda": 0.3503903592268191,
+  "reg_alpha": 0.6149461497065265,
+  "gamma": 3.765723793734678,
+  "balance": "full"
+ },
+ "best_cv_auc": 0.8437208186367142,
+ "n_trials": 40,
+ "trials": [
+  {
+   "number": 0,
+   "value": 0.8014553051994744,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 1,
+   "value": 0.8421386653558306,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 2,
+   "value": 0.8301376770244564,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 3,
+   "value": 0.8418494206778544,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 4,
+   "value": 0.8345636009704596,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 5,
+   "value": 0.8392785176819937,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 6,
+   "value": 0.8400249602897457,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 7,
+   "value": 0.8362424689018537,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 8,
+   "value": 0.8431395514520515,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 9,
+   "value": 0.8383758700368118,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 10,
+   "value": 0.8413543309462218,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 11,
+   "value": 0.8400152848276086,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 12,
+   "value": 0.8434530263272084,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 13,
+   "value": 0.8347823327134933,
+   "state": "TrialState.PRUNED"
+  },
+  {
+   "number": 14,
+   "value": 0.83848516741296,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 15,
+   "value": 0.8411481284346969,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 16,
+   "value": 0.8407234856057881,
+   "state": "TrialState.PRUNED"
+  },
+  {
+   "number": 17,
+   "value": 0.8357325702211658,
+   "state": "TrialState.PRUNED"
+  },
+  {
+   "number": 18,
+   "value": 0.8440878063616196,
+   "state": "TrialState.PRUNED"
+  },
+  {
+   "number": 19,
+   "value": 0.844877204980747,
+   "state": "TrialState.PRUNED"
+  },
+  {
+   "number": 20,
+   "value": 0.8328663275018394,
+   "state": "TrialState.PRUNED"
+  },
+  {
+   "number": 21,
+   "value": 0.838672594676094,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 22,
+   "value": 0.8435938548846128,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 23,
+   "value": 0.841388626445807,
+   "state": "TrialState.PRUNED"
+  },
+  {
+   "number": 24,
+   "value": 0.8431021614219742,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 25,
+   "value": 0.8411804639004773,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 26,
+   "value": 0.842582250017848,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 27,
+   "value": 0.8426255231079558,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 28,
+   "value": 0.8390184569769892,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 29,
+   "value": 0.8422880857000518,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 30,
+   "value": 0.8414087299335387,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 31,
+   "value": 0.8425921918106202,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 32,
+   "value": 0.8437208186367142,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 33,
+   "value": 0.8430082209928047,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 34,
+   "value": 0.8424867537248101,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 35,
+   "value": 0.8426890920592619,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 36,
+   "value": 0.8434700551656865,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 37,
+   "value": 0.8433435577598951,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 38,
+   "value": 0.8422565976395372,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 39,
+   "value": 0.8433889740064412,
+   "state": "TrialState.COMPLETE"
+  }
+ ]
+}

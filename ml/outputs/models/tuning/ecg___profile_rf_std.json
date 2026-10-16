@@ -1,0 +1,114 @@
+{
+ "kind": "rf",
+ "space": "full",
+ "best_params": {
+  "n_estimators": 100,
+  "max_depth": 16,
+  "min_samples_leaf": 51,
+  "max_features": 0.6658781436815229
+ },
+ "best_cv_auc": 0.8372299351409019,
+ "n_trials": 20,
+ "trials": [
+  {
+   "number": 0,
+   "value": 0.8342505464533877,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 1,
+   "value": 0.8327374124999917,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 2,
+   "value": 0.8242408027689869,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 3,
+   "value": 0.829808769579496,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 4,
+   "value": 0.8295440836665058,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 5,
+   "value": 0.8316115802050742,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 6,
+   "value": 0.8263809335380229,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 7,
+   "value": 0.8208177854041253,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 8,
+   "value": 0.8372299351409019,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 9,
+   "value": 0.8325540328474494,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 10,
+   "value": 0.8342620024580855,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 11,
+   "value": 0.8323693974349471,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 12,
+   "value": 0.8358196021322811,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 13,
+   "value": 0.8362702882203307,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 14,
+   "value": 0.8358209146439822,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 15,
+   "value": 0.8321811538812585,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 16,
+   "value": 0.8368873422494909,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 17,
+   "value": 0.8364421767720263,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 18,
+   "value": 0.8353235186002997,
+   "state": "TrialState.COMPLETE"
+  },
+  {
+   "number": 19,
+   "value": 0.8369083782322189,
+   "state": "TrialState.COMPLETE"
+  }
+ ]
+}
