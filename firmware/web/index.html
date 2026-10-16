@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>DiaGnostix-ECG</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23256abf'/%3E%3Cpath d='M4 17h6l2-5 3 10 3-14 2 9h8' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme:light dark;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --page:#f4f4f1;--surface:#fcfcfb;--surface-2:#f0efec;
+  --ink:#0b0b0b;--ink-2:#52514e;--muted:#898781;
+  --grid:#e1e0d9;--axis:#c3c2b7;
+  --border:rgba(11,11,11,.10);--border-2:rgba(11,11,11,.24);
+  --btn:#256abf;--btn-h:#1c5cab;--link:#1c5cab;
+  --ecg:#2a78d6;--ppg:#eb6834;
+  --meter:#2a78d6;--meter-track:#cde2fb;--risk-track:#f6d6d6;
+  --good:#0ca30c;--warn:#fab219;--serious:#ec835a;--crit:#d03b3b;
+  --crit-wash:rgba(208,59,59,.09);--serious-wash:rgba(236,131,90,.12);
+  --crit-ink:#b3261e;--overlay:rgba(252,252,251,.74);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --page:#0d0d0d;--surface:#1a1a19;--surface-2:#252523;
+    --ink:#ffffff;--ink-2:#c3c2b7;
+    --grid:#2c2c2a;--axis:#383835;
+    --border:rgba(255,255,255,.10);--border-2:rgba(255,255,255,.24);
+    --btn-h:#2a78d6;--link:#6da7ec;
+    --ecg:#3987e5;--ppg:#d95926;
+    --meter:#3987e5;--meter-track:#0d366b;--risk-track:#4a2222;
+    --crit-wash:rgba(208,59,59,.17);--serious-wash:rgba(236,131,90,.15);
+    --crit-ink:#f39a9a;--overlay:rgba(26,26,25,.76);
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);font:16px/1.45 var(--font);overflow-wrap:break-word}
+h1,h2,h3,p,ol,ul,dl,dd,figure{margin:0}
+a{color:var(--link)}
+:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.num,table,.kv dd{font-variant-numeric:tabular-nums}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border)}
+.top-in{max-width:1280px;margin:0 auto;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:32px;height:32px;flex:none}
+.logo rect{fill:var(--btn)}
+.logo path{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.brand>div{min-width:0}
+h1{font-size:1.125rem;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.ver{font-size:.75rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border:1px solid var(--border-2);border-radius:999px;font-size:.875rem;font-weight:600;white-space:nowrap;flex:none}
+
+/* status atoms */
+.ic{width:18px;height:18px;flex:none;color:var(--muted)}
+.ic.ok{color:var(--good)}.ic.warn{color:var(--warn)}.ic.serious{color:var(--serious)}.ic.crit{color:var(--crit)}.ic.info{color:var(--link)}
+.spin{animation:spin 1.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.st{display:inline-flex;align-items:center;gap:6px}
+p.st{display:flex;align-items:flex-start}
+p.st .ic{margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;font-size:.8125rem;line-height:1.5;background:var(--surface);white-space:nowrap}
+.chip .ic{width:16px;height:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+
+/* connection bar */
+.connbar{max-width:1280px;margin:12px auto 0;padding:0 12px}
+.connbar-in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;border:1px solid var(--border-2);border-radius:12px;background:var(--surface);font-size:.9375rem}
+.connbar form{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1 1 280px}
+.connbar input{flex:1 1 160px;width:auto}
+
+/* layout */
+.layout{max-width:1280px;margin:0 auto;padding:12px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin-bottom:12px}
+h2{font-size:1.0625rem;font-weight:650}
+h3{font-size:.9375rem;font-weight:650;margin:20px 0 8px}
+.meta{font-size:.8125rem;color:var(--ink-2)}
+.hint{font-size:.875rem;color:var(--ink-2)}
+.empty{color:var(--ink-2);font-size:.9375rem;padding:8px 0}
+@media (min-width:720px){
+  .layout{padding:20px 24px;gap:16px}
+  .connbar{padding:0 24px;margin-top:16px}
+  .top-in{padding:10px 24px}
+  .card{padding:20px}
+}
+@media (min-width:1024px){
+  .layout{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+    grid-template-areas:"signals measure" "vitals vitals" "result profile" "history calib"}
+  #signals{grid-area:signals}#measure{grid-area:measure}#vitals{grid-area:vitals}
+  #result{grid-area:result}#profile{grid-area:profile}#history{grid-area:history}#calib{grid-area:calib}
+}
+
+/* alert banner */
+.alert-wrap{max-width:1280px;margin:0 auto;padding:12px 12px 0}
+.alert-wrap:empty{display:none}
+@media (min-width:720px){.alert-wrap{padding:16px 24px 0}}
+.alert{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;padding:14px 16px;border:1px solid var(--crit);border-left-width:6px;border-radius:12px;background:var(--crit-wash)}
+.alert[data-kind=fever]{border-color:var(--serious);background:var(--serious-wash)}
+.alert .ic{width:28px;height:28px;grid-row:span 2}
+.alert strong{font-size:1.0625rem}
+.alert .btn{grid-column:2;justify-self:start;margin-top:8px}
+@media (min-width:720px){.alert{grid-template-columns:auto 1fr auto;align-items:center}.alert .btn{grid-column:3;grid-row:1/span 2;margin:0}}
+
+/* buttons and inputs */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;font:inherit;font-size:.9375rem;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--border-2);border-radius:8px;cursor:pointer;text-decoration:none;text-align:center}
+.btn:enabled:hover{background:var(--surface-2)}
+.btn.primary{background:var(--btn);border-color:var(--btn);color:#fff}
+.btn.primary:enabled:hover{background:var(--btn-h);border-color:var(--btn-h)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.row .btn{flex:1 1 auto}
+@media (min-width:720px){.row .btn{flex:0 0 auto}}
+input[type=number],input[type=text]{width:100%;min-height:44px;padding:8px 12px;font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--border-2);border-radius:8px}
+input[aria-invalid=true],.seg[aria-invalid=true]{border-color:var(--crit);box-shadow:0 0 0 1px var(--crit)}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label,.flabel{font-size:.875rem;font-weight:600}
+.u{font-weight:400;color:var(--ink-2)}
+.err{font-size:.8125rem;color:var(--crit-ink)}
+.err:empty{display:none}
+.fgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fgrid .wide{grid-column:1/-1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* segmented radio control */
+.seg{position:relative;display:inline-flex;align-self:flex-start;border:1px solid var(--border-2);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.seg label{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;min-width:64px;padding:0 14px;font-size:.9375rem;font-weight:550;cursor:pointer;user-select:none}
+.seg label+input+label{border-left:1px solid var(--border-2)}
+.seg input:checked+label{background:var(--btn);color:#fff}
+.seg input:checked+label::before{content:"";width:5px;height:10px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin:-3px 2px 0 0}
+.seg input:focus-visible+label{outline:2px solid var(--link);outline-offset:-4px}
+.seg input:disabled+label{opacity:.45;cursor:not-allowed}
+
+/* signals */
+.wave+.wave{margin-top:14px}
+.wave figcaption{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;font-size:.875rem;margin-bottom:6px}
+.key{display:inline-block;width:16px;height:2px;border-radius:1px;background:var(--ecg)}
+.key.ppg{background:var(--ppg)}
+.cap{color:var(--ink-2);font-size:.8125rem}
+.cv{position:relative;height:150px;border:1px solid var(--border);border-radius:8px;background:var(--surface);overflow:hidden}
+.cv.ppg{height:110px}
+@media (min-width:720px){.cv{height:190px}.cv.ppg{height:130px}}
+.cv canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--overlay)}
+.ov .chip{font-size:.9375rem;padding:6px 14px;font-weight:600}
+
+/* vitals */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;transition:opacity .2s}
+@media (min-width:760px){.tiles{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.tiles.stale{opacity:.5}
+.tile{border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:0}
+.tile .lbl{font-size:.8125rem;color:var(--ink-2);line-height:1.3}
+.tile .val{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:4px;font-size:1.5rem;font-weight:620;line-height:1.25;margin-top:4px}
+.tile .val small{font-size:.8125rem;font-weight:500;color:var(--ink-2)}
+.tile .sub{font-size:.8125rem;color:var(--ink-2);margin-top:2px}
+.tile .chip{margin-top:6px;font-size:.75rem;padding:1px 8px;white-space:normal}
+.vnote{margin-top:10px}
+
+/* measurement */
+.dur{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px}
+.why{margin-top:8px;font-size:.875rem;color:var(--ink-2)}
+.prog{margin-top:16px}
+.prog-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font-size:.875rem;margin-bottom:6px}
+.prog-head span:first-child{font-weight:600}
+.track{height:10px;border-radius:5px;background:var(--meter-track);overflow:hidden}
+.fill{height:100%;width:0;background:var(--meter);border-radius:0 5px 5px 0;transition:width .35s ease}
+.msg{margin-top:10px;font-size:.9375rem}
+#res-link{margin-top:12px}
+#res-link:hover{background:var(--surface-2)}
+
+/* result */
+.hero{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.hero-n{font-size:3rem;font-weight:650;line-height:1.05;letter-spacing:-.02em}
+.hero-u{font-size:1.5rem;font-weight:600;margin-left:2px}
+.hero-l{font-size:.9375rem;color:var(--ink-2)}
+.meter{position:relative;margin-top:12px;padding-top:20px}
+.meter .track{height:12px;border-radius:6px}
+.meter .fill{border-radius:0 6px 6px 0}
+.meter.pos .track{background:var(--risk-track)}
+.meter.pos .fill{background:var(--crit)}
+.mark{position:absolute;top:14px;height:24px;width:2px;margin-left:-1px;background:var(--ink)}
+.mark span{position:absolute;bottom:100%;left:1px;transform:translateX(-50%);white-space:nowrap;font-size:.75rem;color:var(--ink-2);padding-bottom:1px}
+.mark[data-side=l] span{transform:none;left:0}
+.mark[data-side=r] span{transform:translateX(-100%);left:2px}
+.scale{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-2);margin-top:8px}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--border-2);font-weight:600;font-size:1rem}
+.verdict .ic{width:22px;height:22px;margin-top:0}
+.verdict.pos{border-color:var(--crit);border-left-width:6px;background:var(--crit-wash)}
+.verdict.neg{border-left:6px solid var(--good)}
+.verdict.mid{border-color:var(--warn);border-left-width:6px}
+.advice{margin-top:10px}
+#res-note,#model-warn{margin-top:8px}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 16px;font-size:.875rem}
+.kv dt{color:var(--ink-2)}
+.kv dd{font-weight:600}
+details{margin-top:14px;border-top:1px solid var(--border);padding-top:2px}
+summary{cursor:pointer;font-weight:600;font-size:.9375rem;padding:10px 0}
+details .kv{margin-top:8px}
+.warns{list-style:none;padding:0;margin-top:14px;display:grid;gap:6px;font-size:.875rem}
+.warns:empty{display:none}
+.warns li{display:flex;gap:8px;align-items:flex-start}
+.warns .ic{margin-top:1px}
+#res-meta{margin-top:14px}
+
+/* profile */
+.bmi{margin-top:12px;font-size:.9375rem}
+.bmi output{font-weight:650;margin-left:6px}
+.qs{margin-top:16px;border-top:1px solid var(--border)}
+.qs>.flabel{display:block;margin-top:12px}
+.q{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px 12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.q-l{font-size:.9375rem}
+.q .seg label{min-width:56px}
+
+/* calibration */
+.steps{padding-left:1.25rem;margin-top:10px;font-size:.9375rem;display:grid;gap:4px}
+#cal-st{margin-bottom:10px;font-weight:600}
+.cal-intro{font-size:.9375rem}
+#cform{margin-top:14px}
+
+/* history */
+.tw{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:.8125rem}
+th{font-weight:600;color:var(--ink-2);text-align:left;padding:6px 3px;border-bottom:1px solid var(--axis);white-space:nowrap}
+td{padding:7px 3px;border-bottom:1px solid var(--grid);vertical-align:middle;white-space:nowrap}
+td.v{white-space:normal}
+.r{text-align:right}
+td.t{line-height:1.25}
+td.t small{display:block;color:var(--ink-2)}
+td .st .ic{width:16px;height:16px}
+
+/* footer and toasts */
+.foot{max-width:1280px;margin:0 auto;padding:8px 12px 32px;font-size:.8125rem;color:var(--ink-2)}
+.foot p+p{margin-top:6px}
+@media (min-width:720px){.foot{padding:8px 24px 40px}}
+.toasts{position:fixed;left:0;right:0;bottom:12px;z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 12px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;width:100%;max-width:440px;padding:6px 6px 6px 14px;border:1px solid var(--crit);border-left-width:6px;border-radius:10px;background:var(--surface);color:var(--ink);box-shadow:0 6px 24px rgba(0,0,0,.18);font-size:.9375rem}
+.toast p{flex:1}
+.x{flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--ink-2);cursor:pointer}
+.x:hover{background:var(--surface-2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.3 3.6a2 2 0 0 1 3.4 0l8.4 14.6A2 2 0 0 1 20.4 21H3.6a2 2 0 0 1-1.7-2.8z" fill="currentColor"/><path d="M12 9v4.6" stroke="#1a1a19" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.4" fill="#1a1a19"/></symbol>
+  <symbol id="i-crit" viewBox="0 0 24 24"><path d="M8.2 2h7.6L22 8.2v7.6L15.8 22H8.2L2 15.8V8.2z" fill="currentColor"/><path d="M12 7v6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1.4" fill="#fff"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-off" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 8.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-13.7 5.7M4 12a8 8 0 0 1 13.7-5.7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M18.5 2.8v4h-4M5.5 21.2v-4h4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M4 17h6l2-5 3 10 3-14 2 9h8"/></svg>
+      <div><h1>DiaGnostix-ECG</h1><p class="ver" id="ver">Waiting for device…</p></div>
+    </div>
+    <span class="pill st" id="conn" role="status"><span>Connecting…</span></span>
+  </div>
+</header>
+
+<div class="connbar" id="connbar" hidden>
+  <div class="connbar-in">
+    <p class="st" id="connbar-msg"><span></span></p>
+    <form id="devform" hidden>
+      <label for="devaddr" class="flabel">Device address</label>
+      <input id="devaddr" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.4.1 or diagnostix.local">
+      <button class="btn primary" type="submit">Connect</button>
+    </form>
+    <button type="button" class="btn" id="reconnect" hidden>Reconnect now</button>
+  </div>
+</div>
+
+<div class="alert-wrap" id="alert-region" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+<main class="layout">
+  <section class="card" id="signals" aria-labelledby="h-signals">
+    <div class="card-head"><h2 id="h-signals">Live signals</h2><span class="meta">5 s window · 1 s grid</span></div>
+    <figure class="wave">
+      <figcaption><span class="key" aria-hidden="true"></span><strong>ECG</strong><span class="cap" id="ecg-cap">250 Hz · mV at the ADC</span></figcaption>
+      <div class="cv"><canvas id="ecg" role="img" aria-label="Live ECG waveform"></canvas>
+        <div class="ov" id="ecg-ov" hidden><span class="chip st"><span>Leads off</span></span></div></div>
+    </figure>
+    <figure class="wave">
+      <figcaption><span class="key ppg" aria-hidden="true"></span><strong>PPG</strong><span class="cap" id="ppg-cap">50 Hz · arbitrary units</span></figcaption>
+      <div class="cv ppg"><canvas id="ppg" role="img" aria-label="Live PPG (finger pulse) waveform"></canvas>
+        <div class="ov" id="ppg-ov" hidden><span class="chip st"><span>No finger</span></span></div></div>
+    </figure>
+  </section>
+
+  <section class="card" id="vitals" aria-labelledby="h-vitals">
+    <div class="card-head"><h2 id="h-vitals">Vitals</h2>
+      <div class="chips">
+        <span class="chip st" id="chip-leads"><span>ECG leads: unknown</span></span>
+        <span class="chip st" id="chip-finger"><span>Finger sensor: unknown</span></span>
+      </div></div>
+    <div class="tiles" id="tiles">
+      <div class="tile"><div class="lbl">Heart rate (ECG)</div><div class="val"><span id="v-hr">—</span><small>bpm</small></div><div class="sub">PPG <span id="v-ppghr">—</span></div></div>
+      <div class="tile"><div class="lbl">SpO₂</div><div class="val"><span id="v-spo2">—</span><small>%</small></div><div class="sub">Perfusion <span id="v-pi">—</span></div></div>
+      <div class="tile"><div class="lbl">Blood pressure</div><div class="val"><span id="v-bp">—</span><small>mmHg</small></div><span class="chip st" id="v-bpb" hidden><span></span></span></div>
+      <div class="tile"><div class="lbl">Pulse arrival time</div><div class="val"><span id="v-pat">—</span><small>ms</small></div><div class="sub">ECG R-peak to pulse</div></div>
+      <div class="tile"><div class="lbl">HRV (SDNN / RMSSD)</div><div class="val"><span id="v-hrv">—</span><small>ms</small></div><div class="sub">Last 30 beats</div></div>
+      <div class="tile"><div class="lbl">Body temperature</div><div class="val"><span id="v-temp">—</span><small>°C</small></div><div class="sub">Skin contact</div></div>
+      <div class="tile"><div class="lbl">Room temperature</div><div class="val"><span id="v-room">—</span><small>°C</small></div><div class="sub">Ambient sensor</div></div>
+      <div class="tile"><div class="lbl">Humidity</div><div class="val"><span id="v-hum">—</span><small>% RH</small></div><div class="sub">Ambient sensor</div></div>
+      <div class="tile"><div class="lbl">Air pressure</div><div class="val"><span id="v-pres">—</span><small>hPa</small></div><div class="sub">Ambient sensor</div></div>
+      <div class="tile"><div class="lbl">BMI</div><div class="val"><span id="v-bmi">—</span><small>kg/m²</small></div><div class="sub" id="v-bmic">From profile</div></div>
+    </div>
+    <p class="hint vnote" id="vitals-note" hidden></p>
+  </section>
+
+  <section class="card" id="measure" aria-labelledby="h-measure">
+    <div class="card-head"><h2 id="h-measure">Measurement</h2><span class="chip st" id="sess-st"><span>Idle</span></span></div>
+    <p class="hint">Sit still and attach the ECG electrodes: red (RA) on the right wrist, yellow (LA) on the left wrist, green (RL) on the right leg or ankle. The fingertip sensor is optional (SpO₂ and blood pressure). The device analyses 10-second ECG windows after a 3-second warm-up.</p>
+    <div class="dur"><span class="flabel" id="dur-l">Duration</span>
+      <div class="seg" role="radiogroup" aria-labelledby="dur-l">
+        <input type="radio" name="dur" id="dur33" value="33" checked><label for="dur33">33 s · 3 windows</label>
+        <input type="radio" name="dur" id="dur63" value="63"><label for="dur63">63 s · 6 windows</label>
+      </div>
+    </div>
+    <div class="row"><button type="button" class="btn primary" id="start">Start measurement</button><button type="button" class="btn" id="cancel">Cancel</button></div>
+    <p class="why" id="start-why" aria-live="polite"></p>
+    <div class="prog">
+      <div class="prog-head"><span id="prog-title">Measurement progress</span><span class="num" id="prog-txt">Ready</span></div>
+      <div class="track" id="prog" role="progressbar" aria-labelledby="prog-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="prog-fill"></div></div>
+    </div>
+    <p class="st msg" id="sess-msg" aria-live="polite" hidden><span></span></p>
+    <a href="#result" class="btn" id="res-link" hidden>View result</a>
+  </section>
+
+  <section class="card" id="result" aria-labelledby="h-result">
+    <div class="card-head"><h2 id="h-result">Result</h2><span class="meta" id="res-src"></span></div>
+    <p class="st" id="model-warn" hidden><svg class="ic warn" aria-hidden="true"><use href="#i-warn"/></svg><span>The device reports that its model self-test failed, so results may be unreliable.</span></p>
+    <p class="empty" id="res-empty">No result yet. Save your profile, then run a measurement to get a prediabetes/diabetes risk estimate.</p>
+    <div id="res-body" hidden>
+      <div class="hero"><span class="hero-n"><span id="res-risk">—</span><span class="hero-u">%</span></span><span class="hero-l">Estimated risk of prediabetes or diabetes</span></div>
+      <div class="meter" id="res-meter" role="img" aria-label="Risk score">
+        <div class="track"><div class="fill" id="res-fill"></div></div>
+        <div class="mark" id="res-mark"><span id="res-thr"></span></div>
+      </div>
+      <div class="scale" aria-hidden="true"><span>0 %</span><span>100 %</span></div>
+      <p class="st verdict" id="res-verdict" aria-live="polite"><span></span></p>
+      <p class="advice" id="res-advice"></p>
+      <p class="hint" id="res-note">This is a screening estimate, not a diagnosis. Only a blood test (fasting glucose or HbA1c) can confirm or rule out prediabetes or diabetes.</p>
+      <h3>ECG analysis</h3>
+      <dl class="kv" id="res-ecg"></dl>
+      <h3>Measured values</h3>
+      <dl class="kv" id="res-meas"></dl>
+      <details id="res-in-wrap"><summary>Model inputs</summary><dl class="kv" id="res-in"></dl></details>
+      <ul class="warns" id="res-warn" aria-label="Warnings"></ul>
+      <p class="meta" id="res-meta"></p>
+    </div>
+  </section>
+
+  <section class="card" id="profile" aria-labelledby="h-profile">
+    <div class="card-head"><h2 id="h-profile">Profile</h2><span class="st meta" id="prof-st" aria-live="polite"><span>Waiting for device</span></span></div>
+    <form id="pform" novalidate>
+      <div class="fgrid">
+        <div class="field wide"><span class="flabel" id="p-gender-l">Gender</span>
+          <div class="seg" id="p-gender" role="radiogroup" aria-labelledby="p-gender-l" aria-describedby="p-gender-err">
+            <input type="radio" name="p-gender" id="p-g-f" value="female"><label for="p-g-f">Female</label>
+            <input type="radio" name="p-gender" id="p-g-m" value="male"><label for="p-g-m">Male</label>
+          </div><p class="err" id="p-gender-err"></p></div>
+        <div class="field"><label for="p-age">Age <span class="u">years</span></label><input id="p-age" type="number" inputmode="numeric" min="18" max="100" step="1" autocomplete="off" aria-describedby="p-age-err"><p class="err" id="p-age-err"></p></div>
+        <div class="field"><label for="p-height">Height <span class="u">cm</span></label><input id="p-height" type="number" inputmode="decimal" min="120" max="220" step="0.1" autocomplete="off" aria-describedby="p-height-err"><p class="err" id="p-height-err"></p></div>
+        <div class="field"><label for="p-weight">Weight <span class="u">kg</span></label><input id="p-weight" type="number" inputmode="decimal" min="25" max="250" step="0.1" autocomplete="off" aria-describedby="p-weight-err"><p class="err" id="p-weight-err"></p></div>
+      </div>
+      <p class="bmi">BMI <output id="p-bmi" for="p-height p-weight">—</output></p>
+      <div class="qs" id="p-qs" hidden><span class="flabel">Lifestyle (asked because the risk model uses it)</span></div>
+      <div class="row"><button type="submit" class="btn primary" id="p-save">Save profile</button></div>
+      <p class="hint" id="p-hint" style="margin-top:8px"></p>
+    </form>
+  </section>
+
+  <section class="card" id="calib" aria-labelledby="h-calib">
+    <div class="card-head"><h2 id="h-calib">Blood-pressure calibration</h2></div>
+    <p class="st" id="cal-st" aria-live="polite"><span>Calibration status unknown</span></p>
+    <p class="cal-intro">Blood pressure is estimated without a cuff from the pulse arrival time. A calibration against a cuff reading makes the estimate personal.</p>
+    <ol class="steps">
+      <li>Measure your blood pressure with a cuff monitor while seated.</li>
+      <li>Enter the systolic (SBP) and diastolic (DBP) values below.</li>
+      <li>Press Calibrate, then keep your finger on the sensor and the ECG leads attached for 20 s.</li>
+    </ol>
+    <form id="cform" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="c-sbp">Systolic <span class="u">mmHg</span></label><input id="c-sbp" type="number" inputmode="numeric" min="70" max="250" step="1" autocomplete="off" aria-describedby="c-sbp-err"><p class="err" id="c-sbp-err"></p></div>
+        <div class="field"><label for="c-dbp">Diastolic <span class="u">mmHg</span></label><input id="c-dbp" type="number" inputmode="numeric" min="40" max="150" step="1" autocomplete="off" aria-describedby="c-dbp-err"><p class="err" id="c-dbp-err"></p></div>
+      </div>
+      <div class="row"><button type="submit" class="btn primary" id="c-go">Calibrate</button><button type="button" class="btn" id="c-clear">Clear calibration</button></div>
+    </form>
+  </section>
+
+  <section class="card" id="gaincal" aria-labelledby="h-gain">
+    <div class="card-head"><h2 id="h-gain">ECG gain calibration</h2></div>
+    <p class="st" id="gain-st" aria-live="polite"><span>Gain status unknown</span></p>
+    <p class="cal-intro">The risk model reads ECG amplitudes in microvolts, so the device must know the exact gain of its AD8232 board. Until the gain is calibrated, the device uses a fallback model that ignores ECG amplitudes.</p>
+    <ol class="steps">
+      <li>Remove the electrodes from your body.</li>
+      <li>Apply a sine wave of known amplitude (e.g. 1 mV peak-to-peak, 5–20 Hz) between RA (red) and LA (yellow), with RL (green) on the generator ground. A function generator set to 1 V peak-to-peak through a 1000 : 1 resistive divider gives 1 mV.</li>
+      <li>Enter the amplitude and press Calibrate gain (6 s). If you measured the gain another way, enter it instead.</li>
+    </ol>
+    <form id="gform" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="g-ref">Reference amplitude <span class="u">mV p-p</span></label><input id="g-ref" type="number" inputmode="decimal" min="0.2" max="2.5" step="0.01" value="1.0" autocomplete="off" aria-describedby="g-ref-err"><p class="err" id="g-ref-err"></p></div>
+        <div class="field"><label for="g-val">Measured gain <span class="u">V/V</span></label><input id="g-val" type="number" inputmode="decimal" min="500" max="2000" step="0.1" autocomplete="off" aria-describedby="g-val-err"><p class="err" id="g-val-err"></p></div>
+      </div>
+      <div class="row"><button type="submit" class="btn primary" id="g-go">Calibrate gain</button><button type="button" class="btn" id="g-set">Use measured gain</button><button type="button" class="btn" id="g-clear">Reset to nominal</button></div>
+    </form>
+  </section>
+
+  <section class="card" id="history" aria-labelledby="h-history">
+    <div class="card-head"><h2 id="h-history">History</h2><span class="meta" id="hist-count"></span></div>
+    <p class="hint" id="hist-note">Results are saved in this browser only.</p>
+    <div class="tw" id="hist-wrap"><table>
+      <caption class="sr-only">Saved results, newest first</caption>
+      <thead><tr><th scope="col">Time</th><th scope="col" class="r">Risk</th><th scope="col">Tier</th><th scope="col" class="r">HR</th><th scope="col" class="r">BP</th><th scope="col" class="r">SpO₂</th></tr></thead>
+      <tbody id="hist-body"></tbody>
+    </table></div>
+    <p class="empty" id="hist-empty">No saved results yet.</p>
+    <div class="row"><button type="button" class="btn" id="hist-csv">Export CSV</button><button type="button" class="btn" id="hist-clear">Clear history</button></div>
+    <h3>Research beat log</h3>
+    <p class="hint" id="beat-info"></p>
+    <div class="row"><button type="button" class="btn" id="beat-csv">Export session beat log (CSV)</button></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p><strong>Research prototype, not a medical device.</strong> DiaGnostix-ECG does not diagnose diabetes. The risk is a screening estimate from models trained on single-lead ECGs and check-up data of Japanese adults (Koga et al., <cite>Cardiovascular Diabetology</cite>, 2025) and validated on simulated device signals, not yet on recordings from this device. Blood pressure is estimated without a cuff. A fasting glucose or HbA1c test ordered by a doctor is needed for a diagnosis.</p>
+  <p id="foot-dev"></p>
+</footer>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const SVGNS = 'http://www.w3.org/2000/svg';
+const KEY_HIST = 'diagnostix-ecg.history.v1';
+const KEY_DEV = 'diagnostix.device';
+const MAX_HIST = 500;
+const MAX_BEATS = 20000;
+const LIFE = [
+  ['smoking', 'Do you smoke?', [['yes', 'Yes'], ['no', 'No'], ['', 'Prefer not to say']]],
+  ['drinking', 'How often do you drink alcohol?', [['1', 'Rarely'], ['2', 'Occasionally'], ['3', 'Regularly'], ['', 'Prefer not to say']]],
+];
+const INPUT_FMT = {
+  age: ['Age', 'years', 0], BMI: ['BMI', 'kg/m²', 1], sBP: ['Systolic BP', 'mmHg', 0], dBP: ['Diastolic BP', 'mmHg', 0],
+  mean_rr_s: ['Mean R-R interval', 's', 3], hr_mean_bpm: ['Mean heart rate', 'bpm', 0], rmssd_ms: ['RMSSD', 'ms', 0],
+  mean_r_uv: ['Mean R amplitude', 'µV', 0], qtc_peak_ms: ['QTc (Q to T peak)', 'ms', 0], t_r_ratio: ['T/R amplitude ratio', '', 3],
+};
+const TIERS = {
+  high: ['crit', 'crit', 'pos', 'High risk of prediabetes or diabetes: please visit a clinic or hospital for a fasting glucose or HbA1c test'],
+  elevated: ['warn', 'warn', 'mid', 'Moderately raised risk: ask for a fasting glucose or HbA1c test at your next check-up'],
+  low: ['ok', 'ok', 'neg', 'Low risk on this screen'],
+  no_result: ['info', 'info', '', 'No result: the measurement could not be analysed'],
+};
+const TIER_SHORT = { high: 'High', elevated: 'Elevated', low: 'Low' };
+const MODEL_NAMES = { primary: 'ECG + profile (primary)', fallback: 'gain-invariant fallback', ecg_only: 'ECG only', none: 'none' };
+
+/* storage: every access is guarded; the page works without it */
+const store = {
+  get(k, d) { try { const v = window.localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { window.localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+  del(k) { try { window.localStorage.removeItem(k); return true; } catch (e) { return false; } },
+};
+
+/* helpers */
+const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+const fmt = (v, d = 0) => (isNum(v) ? v.toFixed(d) : '—');
+const withUnit = (v, d, u) => (isNum(v) ? `${v.toFixed(d)} ${u}` : '—');
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) {
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) el.append(c);
+  return el;
+}
+function icon(name, cls) {
+  const s = document.createElementNS(SVGNS, 'svg');
+  s.setAttribute('class', `ic ${cls || ''}`);
+  s.setAttribute('aria-hidden', 'true');
+  const u = document.createElementNS(SVGNS, 'use');
+  u.setAttribute('href', `#i-${name}`);
+  s.append(u);
+  return s;
+}
+/* A status element holds an icon and a text span: icon shape + text carry the state, colour only reinforces it. */
+function setSt(el, name, cls, text) {
+  if (typeof el === 'string') el = $(el);
+  let s = el.querySelector('svg');
+  if (!s) { s = icon(name, cls); el.prepend(s); }
+  s.setAttribute('class', `ic ${cls || ''}`);
+  s.firstElementChild.setAttribute('href', `#i-${name}`);
+  const t = el.querySelector('span');
+  if (t.textContent !== text) t.textContent = text;
+}
+function setText(id, t) { const el = $(id); if (el.textContent !== t) el.textContent = t; }
+function radioVal(name) { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : null; }
+function setRadio(name, value) { for (const el of document.querySelectorAll(`input[name="${name}"]`)) el.checked = el.value === value; }
+const hasProfile = (p) => !!p && isNum(p.age) && isNum(p.height_cm) && isNum(p.weight_kg) && (p.gender === 'female' || p.gender === 'male');
+function bmiCategory(b) { return b < 18.5 ? 'Underweight' : b < 25 ? 'Healthy range' : b < 30 ? 'Overweight' : 'Obesity range'; }
+const mkFmt = (o) => { try { return new Intl.DateTimeFormat(undefined, o); } catch (e) { return null; } };
+const dtf = mkFmt({ dateStyle: 'medium', timeStyle: 'short' }), dayFmt = mkFmt({ day: 'numeric', month: 'short' }), hmFmt = mkFmt({ hour: 'numeric', minute: '2-digit' });
+const fmtTime = (ms) => (dtf ? dtf.format(new Date(ms)) : new Date(ms).toLocaleString());
+
+/* state */
+const S = {
+  ws: null, host: null, fixedHost: false, conn: 'idle', retry: 0, timer: 0, nextAt: 0, lastMsg: 0,
+  hello: null, profile: undefined, cal: null, session: { state: 'idle' }, alert: { active: false },
+  vitals: null, vitalsAt: -1e9, waveAt: -1e9, ecgEmptyN: 0, ppgEmptyN: 0, clockOffset: null,
+  result: null, resultLive: false, history: [], histSaved: true,
+  log: [], logging: false, logGrace: 0, logMode: 'measure',
+  profDirty: false, awaitProfile: false, profTimer: 0,
+};
+
+/* live sweep charts */
+class Sweep {
+  constructor(canvas, colorKey, minSpan, fs) {
+    this.cv = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.colorKey = colorKey;
+    this.minSpan = minSpan;
+    this.win = 5;
+    this.W = 0; this.H = 0; this.dpr = 1; this.fs = 0;
+    this.setFs(fs);
+    if (window.ResizeObserver) new ResizeObserver(() => this.resize()).observe(canvas);
+    else window.addEventListener('resize', () => this.resize());
+    this.resize();
+  }
+  setFs(fs) {
+    if (!isNum(fs) || fs <= 0 || fs > 5000 || fs === this.fs) return;
+    this.fs = fs;
+    this.N = Math.max(2, Math.round(fs * this.win));
+    this.buf = new Float32Array(this.N).fill(NaN);
+    this.w = 0;
+    this.lo = null; this.hi = null;
+    this.flush();
+  }
+  flush() { this.q = []; this.qi = 0; this.acc = 0; this.starved = true; this.dirty = true; }
+  push(arr) {
+    if (document.hidden) return;
+    for (const v of arr) this.q.push(typeof v === 'number' ? v : NaN);
+  }
+  /* Samples arrive in 100 ms bursts; play them out at the sample rate so the sweep moves smoothly. */
+  step(dt) {
+    const avail = this.q.length - this.qi;
+    if (this.starved) {
+      if (avail < this.fs * 0.15) return;
+      this.starved = false; this.acc = 0;
+    }
+    if (!avail) { this.starved = true; return; }
+    this.acc += this.fs * dt;
+    let n = Math.floor(this.acc);
+    this.acc -= n;
+    if (avail > this.fs * 0.6) n += Math.ceil((avail - this.fs * 0.3) * 0.08);
+    if (avail > this.fs * 2) n = avail - Math.round(this.fs * 0.3);
+    n = Math.min(n, avail);
+    for (let i = 0; i < n; i++) { this.buf[this.w] = this.q[this.qi++]; this.w = (this.w + 1) % this.N; }
+    if (this.qi >= this.q.length) { this.q = []; this.qi = 0; } else if (this.qi > 4096) { this.q = this.q.slice(this.qi); this.qi = 0; }
+    if (n) this.dirty = true;
+  }
+  resize() {
+    const r = this.cv.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    this.W = r.width; this.H = r.height; this.dpr = dpr;
+    this.cv.width = Math.round(r.width * dpr);
+    this.cv.height = Math.round(r.height * dpr);
+    this.dirty = true;
+  }
+  draw(th) {
+    if (!this.dirty || !this.W) return;
+    this.dirty = false;
+    const c = this.ctx, W = this.W, H = this.H, N = this.N, b = this.buf, pad = 16, ph = H - 2 * pad;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    c.lineWidth = 1;
+    c.strokeStyle = th.grid;
+    c.beginPath();
+    for (let s = 1; s < this.win; s++) { const x = Math.round((W * s) / this.win) + 0.5; c.moveTo(x, 0); c.lineTo(x, H); }
+    for (let k = 0; k <= 4; k++) { const y = Math.round(pad + (ph * k) / 4) + 0.5; c.moveTo(0, y); c.lineTo(W, y); }
+    c.stroke();
+    let lo = Infinity, hi = -Infinity;
+    for (let i = 0; i < N; i++) { const v = b[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
+    if (!(hi >= lo)) return;
+    if (hi - lo < this.minSpan) { const m = (hi + lo) / 2; lo = m - this.minSpan / 2; hi = m + this.minSpan / 2; }
+    const extra = (hi - lo) * 0.06;
+    lo -= extra; hi += extra;
+    /* expand at once, contract slowly so the trace does not jump */
+    if (this.lo == null) { this.lo = lo; this.hi = hi; } else {
+      this.lo = lo < this.lo ? lo : this.lo + (lo - this.lo) * 0.03;
+      this.hi = hi > this.hi ? hi : this.hi + (hi - this.hi) * 0.03;
+    }
+    const top = this.hi, ky = ph / (this.hi - this.lo || 1), dx = W / (N - 1), gap = Math.max(3, Math.round(N * 0.025));
+    c.lineWidth = 2; c.lineJoin = 'round'; c.lineCap = 'round';
+    c.strokeStyle = th[this.colorKey];
+    c.beginPath();
+    let pen = false;
+    for (let i = 0; i < N; i++) {
+      const v = b[i];
+      if (v !== v || (i - this.w + N) % N < gap) { pen = false; continue; }
+      const x = i * dx, y = pad + (top - v) * ky;
+      if (pen) c.lineTo(x, y); else { c.moveTo(x, y); pen = true; }
+    }
+    c.stroke();
+    c.fillStyle = th.muted;
+    c.font = `11px ${th.font}`;
+    c.textBaseline = 'top'; c.fillText(String(Math.round(this.hi)), 6, 2);
+    c.textBaseline = 'bottom'; c.fillText(String(Math.round(this.lo)), 6, H - 2);
+  }
+}
+const ecgC = new Sweep($('ecg'), 'ecg', 150, 250);
+const ppgC = new Sweep($('ppg'), 'ppg', 20, 50);
+const charts = [ecgC, ppgC];
+let TH = {};
+function readTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  const g = (n) => cs.getPropertyValue(n).trim();
+  TH = { grid: g('--grid'), muted: g('--muted'), ecg: g('--ecg'), ppg: g('--ppg'), font: g('--font') || 'sans-serif' };
+  for (const ch of charts) ch.dirty = true;
+}
+let raf = 0, lastT = 0;
+function frame(t) {
+  raf = requestAnimationFrame(frame);
+  const dt = lastT ? Math.min(0.1, (t - lastT) / 1000) : 0;
+  lastT = t;
+  for (const ch of charts) { ch.step(dt); ch.draw(TH); }
+}
+function startLoop() { if (!raf && !document.hidden) { lastT = 0; raf = requestAnimationFrame(frame); } }
+function stopLoop() { if (raf) cancelAnimationFrame(raf); raf = 0; }
+
+/* connection */
+const cleanHost = (s) => String(s || '').trim().replace(/^[a-z]+:\/\//i, '').replace(/[/?#].*$/, '');
+function resolveHost() {
+  let p = null;
+  try { p = new URLSearchParams(location.search).get('device'); } catch (e) { p = null; }
+  if (p && cleanHost(p)) return { host: cleanHost(p), fixed: true };
+  if (/^https?:$/.test(location.protocol) && location.host) return { host: location.host, fixed: true };
+  return { host: cleanHost(store.get(KEY_DEV, '')) || null, fixed: false };
+}
+function connect() {
+  clearTimeout(S.timer); S.timer = 0;
+  if (!S.host) { setConn('nohost'); return; }
+  setConn('connecting');
+  let ws;
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${S.host}/ws`); } catch (e) { setConn('closed'); retryLater(); return; }
+  S.ws = ws;
+  ws.onopen = () => {
+    if (S.ws !== ws) return;
+    S.retry = 0; S.lastMsg = performance.now();
+    setConn('open');
+    send({ cmd: 'hello' });
+  };
+  ws.onmessage = (ev) => {
+    if (S.ws !== ws) return;
+    S.lastMsg = performance.now();
+    let m;
+    try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m && typeof m === 'object') { try { handle(m); } catch (e) { console.error(e); } }
+  };
+  ws.onclose = () => { if (S.ws !== ws) return; S.ws = null; setConn('closed'); retryLater(); };
+}
+function dropSocket() {
+  const ws = S.ws;
+  S.ws = null;
+  if (ws) { ws.onopen = ws.onmessage = ws.onclose = null; try { ws.close(); } catch (e) { /* already closed */ } }
+}
+function retryLater() {
+  clearTimeout(S.timer);
+  const d = Math.min(15000, 1000 * 2 ** S.retry) * (0.85 + Math.random() * 0.3);
+  S.retry = Math.min(S.retry + 1, 4);
+  S.nextAt = Date.now() + d;
+  S.timer = setTimeout(connect, d);
+  renderConn();
+}
+function reconnectNow() { dropSocket(); S.retry = 0; connect(); }
+function send(obj) {
+  if (!S.ws || S.ws.readyState !== 1) { toast('Not connected to the device.'); return false; }
+  try { S.ws.send(JSON.stringify(obj)); return true; } catch (e) { toast('Could not send the command.'); return false; }
+}
+function setConn(state) {
+  S.conn = state;
+  renderConn(); renderSignals(); updateControls();
+}
+function renderConn() {
+  const st = S.conn, secs = Math.max(0, Math.ceil((S.nextAt - Date.now()) / 1000));
+  if (st === 'open') setSt('conn', 'ok', 'ok', 'Connected');
+  else if (st === 'connecting') setSt('conn', 'sync', 'info spin', 'Connecting…');
+  else if (st === 'nohost') setSt('conn', 'info', 'info', 'No device address');
+  else setSt('conn', 'off', 'crit', S.timer ? `Offline · retry in ${secs} s` : 'Offline');
+  $('conn').title = S.host ? `Device: ${S.host}` : '';
+  const bar = $('connbar'), showForm = !S.fixedHost;
+  $('devform').hidden = !showForm;
+  $('reconnect').hidden = st !== 'closed';
+  let msg = '';
+  if (st === 'nohost') msg = 'Enter the device address to connect (shown on the serial console, 192.168.4.1 in access-point mode, or diagnostix.local).';
+  else if (st === 'closed') msg = `Connection to ${S.host} lost. ${S.timer ? `Retrying in ${secs} s.` : ''}`;
+  else if (st === 'connecting' && S.retry > 0) msg = `Reconnecting to ${S.host}…`;
+  $('connbar-msg').hidden = !msg;
+  if (msg) setSt('connbar-msg', st === 'closed' ? 'off' : 'info', st === 'closed' ? 'crit' : 'info', msg);
+  bar.hidden = !msg && !showForm;
+  setText('foot-dev', S.hello ? `Device ${S.host || '—'} · firmware ${S.hello.firmware || '—'} · model ${(S.hello.model && S.hello.model.version) || '—'}` : '');
+}
+
+/* message dispatch */
+function handle(m) {
+  switch (m.type) {
+    case 'hello': onHello(m); break;
+    case 'wave': onWave(m); break;
+    case 'vitals': onVitals(m); break;
+    case 'beat': onBeat(m); break;
+    case 'pat': onPat(m); break;
+    case 'session': onSession(m); break;
+    case 'result': onResult(m, true); break;
+    case 'calibration': onCal(m); break;
+    case 'ecg_gain': onGain(m); break;
+    case 'alert': onAlert(m); break;
+    case 'profile': onProfile(m); break;
+    case 'error': onError(m); break;
+    default: break; /* unknown types are ignored */
+  }
+}
+function strip(o) { const c = Object.assign({}, o); delete c.type; return c; }
+
+function onHello(m) {
+  S.hello = m;
+  const md = m.model || {};
+  const ver = `Firmware ${m.firmware || '—'} · Model ${md.version || '—'}`;
+  setText('ver', ver); $('ver').title = ver;
+  if (m.stream) { ecgC.setFs(m.stream.ecg_fs); ppgC.setFs(m.stream.ppg_fs); }
+  setText('ecg-cap', `${fmt(ecgC.fs, 0)} Hz · ${(m.stream && m.stream.ecg_unit) || 'mV at the ADC'}`);
+  setText('ppg-cap', `${fmt(ppgC.fs, 0)} Hz · arbitrary units`);
+  $('model-warn').hidden = md.self_test !== false;
+  if ('profile' in m) onProfile(m.profile);
+  if (m.calibration) onCal(m.calibration);
+  if (m.ecg_gain) onGain(m.ecg_gain);
+  renderLifestyle();
+  if (m.session) onSession(m.session);
+  if (m.alert) onAlert(m.alert);
+  const lr = m.last_result;
+  if (lr && typeof lr === 'object' && !(S.result && S.result.id === lr.id && S.result.t_ms === lr.t_ms)) onResult(lr, false);
+  else renderResult();
+  renderConn();
+}
+
+function onWave(m) {
+  S.waveAt = performance.now();
+  if (Array.isArray(m.ecg)) { S.ecgEmptyN = m.ecg.length ? 0 : S.ecgEmptyN + 1; ecgC.push(m.ecg); }
+  if (Array.isArray(m.ppg)) { S.ppgEmptyN = m.ppg.length ? 0 : S.ppgEmptyN + 1; ppgC.push(m.ppg); }
+  renderOverlays();
+}
+
+function onVitals(v) {
+  S.vitals = v;
+  S.vitalsAt = performance.now();
+  if (isNum(v.t_ms)) {
+    const first = S.clockOffset == null;
+    S.clockOffset = Date.now() - v.t_ms;
+    if (first && S.result && !S.result._wall) renderResult();
+  }
+  renderVitals(); renderSignals(); updateControls();
+}
+
+/* Sensor contact: false when the device says so or the stream is empty for 3 messages; null = unknown. */
+function contact(field, emptyN) {
+  if (S.conn !== 'open') return null;
+  const v = S.vitals, fresh = performance.now() - S.vitalsAt < 3500;
+  if (emptyN >= 3 || (fresh && v && v[field] === false)) return false;
+  return fresh && v && v[field] === true ? true : null;
+}
+const leadsState = () => contact('leads_on', S.ecgEmptyN);
+const fingerState = () => contact('finger_on', S.ppgEmptyN);
+
+function renderVitals() {
+  const v = S.vitals || {};
+  setText('v-hr', fmt(v.hr, 0));
+  setText('v-ppghr', withUnit(v.ppg_hr, 0, 'bpm'));
+  setText('v-spo2', fmt(v.spo2, 0));
+  setText('v-pi', withUnit(v.pi, 2, '%'));
+  setText('v-bp', isNum(v.sbp) && isNum(v.dbp) ? `${v.sbp.toFixed(0)}/${v.dbp.toFixed(0)}` : '—');
+  const b = $('v-bpb');
+  b.hidden = typeof v.bp_calibrated !== 'boolean';
+  if (v.bp_calibrated === false) setSt(b, 'warn', 'warn', 'Uncalibrated estimate');
+  else if (v.bp_calibrated === true) setSt(b, 'ok', 'ok', 'Calibrated');
+  setText('v-pat', fmt(v.pat_ms, 0));
+  setText('v-hrv', isNum(v.sdnn) || isNum(v.rmssd) ? `${fmt(v.sdnn, 0)} / ${fmt(v.rmssd, 0)}` : '—');
+  setText('v-temp', fmt(v.body_temp, 1));
+  setText('v-room', fmt(v.room_temp, 1));
+  setText('v-hum', fmt(v.humidity, 0));
+  setText('v-pres', fmt(v.pressure, 1));
+}
+function renderBmiTile() {
+  const p = S.profile;
+  let b = p && isNum(p.bmi) ? p.bmi : null;
+  if (b == null && hasProfile(p)) b = p.weight_kg / (p.height_cm / 100) ** 2;
+  setText('v-bmi', fmt(b, 1));
+  setText('v-bmic', b == null ? 'Set in profile' : `${bmiCategory(b)} · from profile`);
+}
+function renderSignals() {
+  const open = S.conn === 'open', fresh = open && performance.now() - S.vitalsAt < 3500;
+  const lf = leadsState(), ff = fingerState();
+  if (lf === true) setSt('chip-leads', 'ok', 'ok', 'ECG leads on');
+  else if (lf === false) setSt('chip-leads', 'warn', 'warn', 'ECG leads off');
+  else setSt('chip-leads', 'info', '', 'ECG leads: unknown');
+  if (ff === true) setSt('chip-finger', 'ok', 'ok', 'Finger on sensor');
+  else if (ff === false) setSt('chip-finger', 'warn', 'warn', 'No finger on sensor');
+  else setSt('chip-finger', 'info', '', 'Finger sensor: unknown');
+  $('tiles').classList.toggle('stale', !fresh);
+  const note = !open ? (S.vitals ? 'Not connected. Values shown are the last ones received.' : 'Not connected.') : !fresh ? 'Waiting for data from the device…' : '';
+  $('vitals-note').hidden = !note;
+  setText('vitals-note', note);
+  renderOverlays();
+}
+function setOv(id, r) {
+  const el = $(id);
+  el.hidden = !r;
+  if (r) setSt(el.firstElementChild, r[0], r[1], r[2]);
+}
+function renderOverlays() {
+  const open = S.conn === 'open', fresh = open && performance.now() - S.waveAt < 2500;
+  let e = null, p = null;
+  if (!open) e = p = ['off', '', 'Not connected'];
+  else if (!fresh) e = p = ['sync', 'info', 'Waiting for signal…'];
+  else {
+    if (leadsState() === false) e = ['warn', 'warn', 'Leads off'];
+    if (fingerState() === false) p = ['warn', 'warn', 'No finger'];
+  }
+  setOv('ecg-ov', e); setOv('ppg-ov', p);
+}
+
+/* per-beat research log */
+function onBeat(b) {
+  if (!S.logging || !isNum(b.t_ms) || S.log.length >= MAX_BEATS) return;
+  S.log.push({ t: b.t_ms, rr: isNum(b.rr) ? b.rr : null, pat: null, sbp: null, dbp: null });
+  renderBeatInfo();
+}
+function onPat(p) {
+  if (!isNum(p.t_ms) || !(S.logging || performance.now() < S.logGrace)) return;
+  const row = { pat: isNum(p.pat_ms) ? p.pat_ms : null, sbp: isNum(p.sbp) ? p.sbp : null, dbp: isNum(p.dbp) ? p.dbp : null };
+  const L = S.log;
+  /* merge with the beat this pulse belongs to (same or slightly earlier R-peak time) */
+  for (let i = L.length - 1; i >= 0 && i >= L.length - 4; i--) {
+    const d = p.t_ms - L[i].t;
+    if (L[i].pat == null && d >= 0 && d <= 600) { Object.assign(L[i], row); renderBeatInfo(); return; }
+  }
+  if (S.logging && L.length < MAX_BEATS) { L.push(Object.assign({ t: p.t_ms, rr: null }, row)); renderBeatInfo(); }
+}
+function renderBeatInfo() {
+  const n = S.log.length, what = S.logMode === 'calibrate' ? 'calibration' : 'measurement';
+  $('beat-csv').disabled = n === 0;
+  setText('beat-info', n
+    ? `${plural(n, 'beat')} logged in the ${S.logging ? 'current' : 'last'} ${what} session.`
+    : 'No beats logged yet. Per-beat R-R intervals and pulse arrival times are recorded while a session runs.');
+}
+
+/* session */
+function onSession(m) {
+  const prev = S.session || {}, cur = strip(m), acq = cur.state === 'acquiring';
+  const restarted = isNum(cur.elapsed_s) && isNum(prev.elapsed_s) && cur.elapsed_s + 0.5 < prev.elapsed_s;
+  if (acq && (prev.state !== 'acquiring' || restarted || prev.mode !== cur.mode)) { S.log = []; S.logMode = cur.mode || 'measure'; }
+  if (acq) S.logging = true;
+  else if (S.logging) { S.logging = false; S.logGrace = performance.now() + 1500; }
+  S.session = cur;
+  renderSession(); renderBeatInfo();
+}
+function renderSession() {
+  const s = S.session || {}, st = s.state || 'idle', cal = s.mode === 'calibrate' || s.mode === 'gain';
+  const map = {
+    acquiring: ['sync', 'info spin', s.mode === 'gain' ? 'Calibrating gain' : cal ? 'Calibrating' : 'Measuring'], complete: ['ok', 'ok', 'Complete'],
+    failed: ['warn', 'warn', 'Failed'], idle: ['info', '', 'Idle'],
+  };
+  const r = map[st] || map.idle;
+  setSt('sess-st', r[0], r[1], r[2]);
+  let p = isNum(s.progress) ? s.progress : isNum(s.elapsed_s) && isNum(s.duration_s) && s.duration_s > 0 ? s.elapsed_s / s.duration_s : 0;
+  if (st === 'complete') p = 1; else if (st === 'idle') p = 0;
+  p = clamp(p, 0, 1);
+  $('prog-fill').style.width = `${(p * 100).toFixed(1)}%`;
+  const counts = `${plural(isNum(s.beats) ? s.beats : 0, 'beat')} · ${plural(isNum(s.pats) ? s.pats : 0, 'PAT')}`;
+  const line = st === 'acquiring' ? `${fmt(s.elapsed_s, 0)} of ${fmt(s.duration_s, 0)} s · ${counts}` : st === 'idle' ? 'Ready' : counts;
+  setText('prog-txt', line);
+  const bar = $('prog');
+  bar.setAttribute('aria-valuenow', String(Math.round(p * 100)));
+  bar.setAttribute('aria-valuetext', st === 'acquiring' ? `${Math.round(p * 100)} percent, ${line}` : line);
+  setText('prog-title', cal ? 'Calibration progress' : 'Measurement progress');
+  const msg = $('sess-msg');
+  msg.hidden = !s.message;
+  if (s.message) setSt(msg, st === 'failed' ? 'warn' : st === 'complete' ? 'ok' : 'info', st === 'failed' ? 'warn' : st === 'complete' ? 'ok' : 'info', String(s.message));
+  $('res-link').hidden = !(st === 'complete' && !cal && S.result);
+  setText('start', st === 'acquiring' && !cal ? 'Measuring…' : 'Start measurement');
+  updateControls();
+}
+function updateControls() {
+  const on = S.conn === 'open', s = S.session || {}, acq = s.state === 'acquiring', prof = hasProfile(S.profile);
+  const gainCal = !!(S.gain && S.gain.calibrated), needs = (S.hello && S.hello.model && S.hello.model.needs) || [];
+  const needFinger = needs.includes('sBP') || needs.includes('dBP');
+  $('start').disabled = !on || acq || !(prof || gainCal);
+  $('cancel').disabled = !on || !acq;
+  for (const r of document.querySelectorAll('input[name="dur"]')) r.disabled = acq;
+  const why = $('start-why');
+  let parts = [];
+  if (!on) parts = ['Connect to the device to start a measurement.'];
+  else if (acq) parts = [s.mode === 'calibrate' ? 'Calibration in progress.' : 'Keep still until the measurement has finished.'];
+  else if (S.profile === undefined) parts = ['Waiting for the profile stored on the device.'];
+  else if (!prof && !gainCal) parts = ['Save your profile first: the risk model needs your age, gender, height and weight. ', h('a', { href: '#profile' }, 'Go to profile')];
+  else if (!prof) parts = ['No profile saved: the less accurate ECG-only model will be used. ', h('a', { href: '#profile' }, 'Go to profile')];
+  else if (leadsState() === false) parts = ['Attach the ECG electrodes before starting.'];
+  else if (needFinger && fingerState() === false) parts = ['Place a finger on the sensor before starting: the model uses blood pressure.'];
+  else if (!gainCal) parts = ['ECG gain not calibrated: the gain-invariant fallback model will be used. ', h('a', { href: '#gaincal' }, 'Calibrate the gain')];
+  const key = parts.map((x) => (typeof x === 'string' ? x : x.textContent)).join('');
+  if (why.dataset.key !== key) { why.dataset.key = key; why.replaceChildren(...parts); }
+  why.hidden = !key;
+  $('c-go').disabled = !on || acq;
+  $('c-clear').disabled = !on || acq || !(S.cal && S.cal.calibrated);
+  $('g-go').disabled = !on || acq;
+  $('g-set').disabled = !on || acq;
+  $('g-clear').disabled = !on || acq || !gainCal;
+  $('p-save').disabled = !on;
+  setText('p-hint', on ? 'Saved on the device and used for every measurement.' : 'Connect to the device to save your profile.');
+  const ack = $('ack');
+  if (ack && !ack.dataset.busy) ack.disabled = !on;
+}
+
+/* result */
+function onResult(m, live) {
+  const r = strip(m);
+  if (live) { r._wall = Date.now(); addHistory(r); }
+  S.result = r;
+  S.resultLive = live;
+  renderResult();
+  renderSession();
+}
+function resultThreshold(r) {
+  if (r && isNum(r.threshold)) return r.threshold;
+  const md = S.hello && S.hello.model;
+  return md && isNum(md.threshold) ? md.threshold : null;
+}
+function resultPositive(r, thr) {
+  if (typeof r.positive === 'boolean') return r.positive;
+  return isNum(r.risk) && isNum(thr) ? r.risk >= thr : null;
+}
+function resultWall(r) {
+  if (r._wall) return r._wall;
+  return isNum(r.t_ms) && S.clockOffset != null ? S.clockOffset + r.t_ms : null;
+}
+function kv(id, pairs) { $(id).replaceChildren(...pairs.map(([k, v]) => h('div', null, h('dt', null, k), h('dd', null, v)))); }
+function renderResult() {
+  const r = S.result;
+  $('res-empty').hidden = !!r;
+  $('res-body').hidden = !r;
+  if (!r) { setText('res-src', ''); return; }
+  const thr = resultThreshold(r), risk = isNum(r.risk) ? clamp(r.risk, 0, 1) : null, pos = resultPositive(r, thr);
+  setText('res-src', S.resultLive ? 'Latest measurement' : 'Last result stored on the device');
+  setText('res-risk', risk == null ? '—' : String(Math.round(risk * 100)));
+  const meter = $('res-meter');
+  meter.classList.toggle('pos', pos === true);
+  $('res-fill').style.width = risk == null ? '0' : `${(risk * 100).toFixed(1)}%`;
+  const mark = $('res-mark');
+  mark.hidden = !isNum(thr);
+  if (isNum(thr)) {
+    const t = clamp(thr, 0, 1) * 100;
+    mark.style.left = `${t}%`;
+    mark.dataset.side = t < 15 ? 'l' : t > 85 ? 'r' : 'c';
+    setText('res-thr', `Threshold ${t.toFixed(0)} %`);
+  }
+  meter.setAttribute('aria-label', `Risk score ${risk == null ? 'unknown' : `${Math.round(risk * 100)} percent`}${isNum(thr) ? `, decision threshold ${(thr * 100).toFixed(1)} percent` : ''}`);
+  const v = $('res-verdict');
+  const tier = r.tier || (pos === true ? 'high' : pos === false ? 'low' : 'no_result');
+  const t = TIERS[tier] || TIERS.no_result;
+  setSt(v, t[0], t[1], tier === 'no_result' && r.note ? `No result: ${r.note}` : t[3]);
+  for (const c of ['pos', 'mid', 'neg']) v.classList.toggle(c, t[2] === c);
+  setText('res-advice', r.advice ? String(r.advice) : '');
+  const e = r.ecg || {};
+  const wins = Array.isArray(r.windows) ? r.windows : [];
+  kv('res-ecg', [
+    ['Model', `${MODEL_NAMES[r.model] || r.model || '—'}`],
+    ['10-s windows used', isNum(r.windows_ok) && isNum(r.windows_total) ? `${r.windows_ok} of ${r.windows_total}` : '—'],
+    ['Window scores', wins.length ? wins.map((w) => (w.status === 'ok' ? fmt(w.score, 3) : w.status.replace('_', ' '))).join(' · ') : '—'],
+    ['Heart rate (ECG)', withUnit(e.hr, 0, 'bpm')],
+    ['R-R variability (SD / RMSSD)', isNum(e.rr_sd_ms) || isNum(e.rmssd_ms) ? `${fmt(e.rr_sd_ms, 0)} / ${fmt(e.rmssd_ms, 0)} ms` : '—'],
+    ['P-R / QRS / QTc', `${fmt(e.pr_ms, 0)} / ${fmt(e.qrs_ms, 0)} / ${fmt(e.qtc_ms, 0)} ms`],
+    ['R amplitude / T-R ratio', `${withUnit(e.r_uv, 0, 'µV')} / ${fmt(e.t_r_ratio, 2)}`],
+  ]);
+
+  const m = r.measurements || {};
+  const bpTxt = isNum(m.sbp) && isNum(m.dbp) ? `${m.sbp.toFixed(0)}/${m.dbp.toFixed(0)} mmHg` : '—';
+  kv('res-meas', [
+    ['Heart rate', withUnit(m.hr, 0, 'bpm')],
+    ['Blood pressure', m.bp_calibrated === false && bpTxt !== '—' ? `${bpTxt} (uncalibrated)` : bpTxt],
+    ['Pulse arrival time', withUnit(m.pat_ms, 0, 'ms')],
+    ['SpO₂', withUnit(m.spo2, 0, '%')],
+    ['Body temperature', withUnit(m.body_temp, 1, '°C')],
+    ['Room temperature', withUnit(m.room_temp, 1, '°C')],
+    ['HRV SDNN / RMSSD', isNum(m.sdnn) || isNum(m.rmssd) ? `${fmt(m.sdnn, 0)} / ${fmt(m.rmssd, 0)} ms` : '—'],
+    ['Beats / PATs', `${isNum(m.beats) ? m.beats : '—'} / ${isNum(m.pats) ? m.pats : '—'}`],
+  ]);
+  const inp = r.inputs && typeof r.inputs === 'object' ? r.inputs : null;
+  $('res-in-wrap').hidden = !inp;
+  if (inp) {
+    const feats = Object.keys(INPUT_FMT);
+    const keys = [...feats.filter((k) => k in inp), ...Object.keys(inp).filter((k) => !feats.includes(k))];
+    kv('res-in', keys.map((k) => {
+      const x = inp[k];
+      if (k === 'male_sex') return ['Sex', x === 1 ? 'Male (1)' : x === 0 ? 'Female (0)' : String(x)];
+      if (k === 'smoking') return ['Smoking', x === 1 ? 'Yes (1)' : x === 0 ? 'No (0)' : '—'];
+      if (k === 'drinking') return ['Drinking', ({ 1: 'Rarely (1)', 2: 'Occasionally (2)', 3: 'Regularly (3)' })[x] || '—'];
+      const f = INPUT_FMT[k];
+      return f ? [f[0], withUnit(x, f[2], f[1])] : [k, x == null ? '—' : String(x)];
+    }));
+  }
+  const warns = Array.isArray(r.warnings) ? r.warnings.filter((w) => w != null && w !== '') : [];
+  $('res-warn').replaceChildren(...warns.map((w) => h('li', null, icon('warn', 'warn'), h('span', null, String(w)))));
+  const wall = resultWall(r);
+  const bits = [];
+  if (r.id != null) bits.push(`Result #${r.id}`);
+  bits.push(wall ? `${r._wall ? '' : 'about '}${fmtTime(wall)}` : isNum(r.t_ms) ? `device time ${(r.t_ms / 1000).toFixed(0)} s` : null);
+  if (isNum(thr)) bits.push(`high-risk threshold ${(thr * 100).toFixed(1)} %`);
+  bits.push(`models ${r.model_version || '—'}`);
+  if (isNum(r.compute_ms)) bits.push(`analysis ${r.compute_ms} ms`);
+  setText('res-meta', bits.filter(Boolean).join(' · '));
+}
+
+/* history */
+function loadHistory() {
+  const raw = store.get(KEY_HIST, []);
+  S.history = Array.isArray(raw) ? raw.filter((e) => e && typeof e === 'object' && isNum(e.risk) && isNum(e.wall)) : [];
+}
+function addHistory(r) {
+  const key = `${r.id}|${r.t_ms}|${r.risk}`;
+  if (!isNum(r.risk) || S.history.some((e) => e.key === key)) return;
+  const m = r.measurements || {}, thr = resultThreshold(r), n = (x) => (isNum(x) ? x : null);
+  S.history.push({
+    key, wall: r._wall, id: r.id == null ? null : r.id, t_ms: n(r.t_ms), risk: r.risk, positive: resultPositive(r, thr), threshold: n(thr),
+    tier: r.tier || null, model: r.model || null,
+    hr: n(m.hr), sbp: n(m.sbp), dbp: n(m.dbp), bp_calibrated: typeof m.bp_calibrated === 'boolean' ? m.bp_calibrated : null,
+    pat_ms: n(m.pat_ms), spo2: n(m.spo2), body_temp: n(m.body_temp), model_version: r.model_version || null,
+    warnings: Array.isArray(r.warnings) ? r.warnings.join('; ') : '',
+  });
+  if (S.history.length > MAX_HIST) S.history.splice(0, S.history.length - MAX_HIST);
+  S.histSaved = store.set(KEY_HIST, S.history);
+  renderHistory();
+}
+function renderHistory() {
+  const list = S.history.slice().reverse(), shown = list.slice(0, 50);
+  $('hist-body').replaceChildren(...shown.map((e) => {
+    const d = new Date(e.wall);
+    return h('tr', null,
+      h('td', { class: 't' }, h('small', null, dayFmt ? dayFmt.format(d) : d.toLocaleDateString()), hmFmt ? hmFmt.format(d) : d.toLocaleTimeString()),
+      h('td', { class: 'r' }, `${Math.round(e.risk * 100)} %`),
+      h('td', { class: 'v' }, (() => { const tr = e.tier || (e.positive ? 'high' : 'low'), t = TIERS[tr] || TIERS.low; return h('span', { class: 'st' }, icon(t[0], t[1]), h('span', null, TIER_SHORT[tr] || tr)); })()),
+      h('td', { class: 'r' }, fmt(e.hr, 0)),
+      h('td', { class: 'r' }, isNum(e.sbp) && isNum(e.dbp) ? `${e.sbp.toFixed(0)}/${e.dbp.toFixed(0)}` : '—'),
+      h('td', { class: 'r' }, fmt(e.spo2, 0)));
+  }));
+  const n = list.length;
+  $('hist-empty').hidden = n > 0;
+  $('hist-wrap').hidden = n === 0;
+  setText('hist-count', n ? `${plural(n, 'result')}${n > shown.length ? `, latest ${shown.length} shown` : ''}` : '');
+  $('hist-csv').disabled = n === 0;
+  $('hist-clear').disabled = n === 0;
+  setText('hist-note', S.histSaved ? 'Results are saved in this browser only.' : 'This browser blocks local storage, so history is kept only until the page is closed.');
+}
+function csvCell(v) {
+  if (v == null) return '';
+  let s = String(v);
+  if (typeof v === 'string' && /^[=+@\t\r-]/.test(s)) s = `'${s}`;
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+const toCsv = (rows) => `${rows.map((r) => r.map(csvCell).join(',')).join('\r\n')}\r\n`;
+function stamp() {
+  const d = new Date(), p = (x) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+}
+function download(name, text) {
+  try {
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+    const a = h('a', { href: url, download: name, hidden: true });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (e) { toast('Could not create the download.'); }
+}
+function exportHistory() {
+  const rows = [['time_iso', 'result_id', 'device_t_ms', 'risk', 'risk_percent', 'tier', 'model', 'positive', 'threshold', 'hr_bpm', 'sbp_mmhg', 'dbp_mmhg',
+    'bp_calibrated', 'pat_ms', 'spo2_pct', 'body_temp_c', 'model_version', 'warnings']];
+  for (const e of S.history) {
+    rows.push([new Date(e.wall).toISOString(), e.id, e.t_ms, e.risk, Math.round(e.risk * 1000) / 10, e.tier, e.model, e.positive, e.threshold, e.hr, e.sbp, e.dbp,
+      e.bp_calibrated, e.pat_ms, e.spo2, e.body_temp, e.model_version, e.warnings]);
+  }
+  download(`diagnostix-history-${stamp()}.csv`, toCsv(rows));
+}
+function exportBeats() {
+  const rows = [['t_ms', 'rr_ms', 'pat_ms', 'sbp', 'dbp']];
+  for (const r of S.log.slice().sort((a, b) => a.t - b.t)) rows.push([r.t, r.rr, r.pat, r.sbp, r.dbp]);
+  download(`diagnostix-beats-${S.logMode === 'calibrate' ? 'calibration' : 'measurement'}-${stamp()}.csv`, toCsv(rows));
+}
+
+/* profile */
+function buildQuestions() {
+  const box = $('p-qs');
+  for (const [k, q, opts] of LIFE) {
+    const id = `q-${k}`;
+    box.append(h('div', { class: 'q', id: `${id}-row` },
+      h('span', { class: 'q-l', id: `${id}-l` }, q),
+      h('div', { class: 'seg', role: 'radiogroup', 'aria-labelledby': `${id}-l` },
+        ...opts.flatMap(([val, lab], i) => [h('input', { type: 'radio', name: id, id: `${id}-${i}`, value: val, checked: val === '' }),
+          h('label', { for: `${id}-${i}` }, lab)]))));
+  }
+}
+/* Lifestyle questions are shown only if one of the device's models uses them. */
+function renderLifestyle() {
+  const needs = (S.hello && S.hello.model && S.hello.model.needs) || [];
+  let any = false;
+  for (const [k] of LIFE) { const show = needs.includes(k); $(`q-${k}-row`).hidden = !show; any = any || show; }
+  $('p-qs').hidden = !any;
+}
+function fieldNum(id) {
+  const el = $(id);
+  if (el.validity && el.validity.badInput) return NaN;
+  const s = el.value.trim();
+  if (!s) return null;
+  const n = Number(s.replace(',', '.'));
+  return Number.isFinite(n) ? n : NaN;
+}
+function rangeErr(v, lo, hi, what, u, whole) {
+  if (v === null) return `Enter ${what}.`;
+  if (Number.isNaN(v)) return 'Enter a number.';
+  if (whole && !Number.isInteger(v)) return 'Enter a whole number.';
+  if (v < lo || v > hi) return `Must be between ${lo} and ${hi} ${u}.`;
+  return '';
+}
+function showErr(id, msg) {
+  const el = $(id);
+  if (msg) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
+  setText(`${id}-err`, msg);
+}
+function renderFormBmi() {
+  const ht = fieldNum('p-height'), wt = fieldNum('p-weight');
+  const ok = isNum(ht) && isNum(wt) && ht >= 120 && ht <= 220 && wt >= 25 && wt <= 250;
+  const b = ok ? wt / (ht / 100) ** 2 : null;
+  setText('p-bmi', b == null ? '—' : `${b.toFixed(1)} kg/m² · ${bmiCategory(b)}`);
+}
+function fillProfile(p) {
+  $('p-age').value = p && isNum(p.age) ? String(p.age) : '';
+  if (p && (p.gender === 'female' || p.gender === 'male')) setRadio('p-gender', p.gender); else setRadio('p-gender', '');
+  $('p-height').value = p && isNum(p.height_cm) ? String(p.height_cm) : '';
+  $('p-weight').value = p && isNum(p.weight_kg) ? String(p.weight_kg) : '';
+  setRadio('q-smoking', p && p.smoking === true ? 'yes' : p && p.smoking === false ? 'no' : '');
+  setRadio('q-drinking', p && isNum(p.drinking) ? String(p.drinking) : '');
+  for (const id of ['p-age', 'p-gender', 'p-height', 'p-weight']) showErr(id, '');
+  S.profDirty = false;
+  renderFormBmi();
+}
+function renderProfStatus(override) {
+  if (override) { setSt('prof-st', override[0], override[1], override[2]); return; }
+  if (S.awaitProfile) setSt('prof-st', 'sync', 'info spin', 'Saving…');
+  else if (S.profDirty) setSt('prof-st', 'info', 'info', 'Unsaved changes');
+  else if (hasProfile(S.profile)) setSt('prof-st', 'ok', 'ok', 'Stored on the device');
+  else if (S.profile === null) setSt('prof-st', 'warn', 'warn', 'Not set yet');
+  else setSt('prof-st', 'info', '', 'Waiting for device');
+}
+function onProfile(p) {
+  const prof = p && typeof p === 'object' ? strip(p) : null;
+  S.profile = prof;
+  if (S.awaitProfile || !S.profDirty) fillProfile(prof);
+  if (S.awaitProfile) { S.awaitProfile = false; clearTimeout(S.profTimer); }
+  renderProfStatus(); renderBmiTile(); updateControls();
+}
+function submitProfile(ev) {
+  ev.preventDefault();
+  const age = fieldNum('p-age'), ht = fieldNum('p-height'), wt = fieldNum('p-weight'), g = radioVal('p-gender');
+  const errs = [
+    ['p-gender', g === 'female' || g === 'male' ? '' : 'Select female or male.'],
+    ['p-age', rangeErr(age, 18, 100, 'your age', 'years', true)],
+    ['p-height', rangeErr(ht, 120, 220, 'your height', 'cm', false)],
+    ['p-weight', rangeErr(wt, 25, 250, 'your weight', 'kg', false)],
+  ];
+  let first = null;
+  for (const [id, msg] of errs) { showErr(id, msg); if (msg && !first) first = id; }
+  if (first) {
+    const el = $(first);
+    (el.getAttribute('role') === 'radiogroup' ? el.querySelector('input') : el).focus();
+    renderProfStatus(['warn', 'warn', 'Check the highlighted fields']);
+    return;
+  }
+  const cmd = { cmd: 'profile', age, gender: g, height_cm: Math.round(ht * 10) / 10, weight_kg: Math.round(wt * 10) / 10 };
+  const smk = radioVal('q-smoking'), drk = radioVal('q-drinking');
+  if (smk === 'yes' || smk === 'no') cmd.smoking = smk === 'yes';
+  if (drk) cmd.drinking = Number(drk);
+  cmd.persist = true;
+  if (!send(cmd)) return;
+  S.awaitProfile = true;
+  renderProfStatus();
+  clearTimeout(S.profTimer);
+  S.profTimer = setTimeout(() => {
+    if (!S.awaitProfile) return;
+    S.awaitProfile = false;
+    renderProfStatus(['warn', 'warn', 'No confirmation from the device']);
+  }, 5000);
+}
+
+/* calibration */
+function onCal(m) {
+  S.cal = strip(m);
+  renderCal(); updateControls();
+}
+function renderCal() {
+  const c = S.cal;
+  if (!c) setSt('cal-st', 'info', '', 'Calibration status unknown');
+  else if (c.calibrated) setSt('cal-st', 'ok', 'ok', `Calibrated at ${fmt(c.sbp, 0)}/${fmt(c.dbp, 0)} mmHg (pulse arrival time ${fmt(c.pat_ms, 0)} ms)`);
+  else setSt('cal-st', 'warn', 'warn', `Not calibrated: using the population default (${fmt(c.sbp, 0)}/${fmt(c.dbp, 0)} mmHg at ${fmt(c.pat_ms, 0)} ms)`);
+}
+function submitCal(ev) {
+  ev.preventDefault();
+  const sbp = fieldNum('c-sbp'), dbp = fieldNum('c-dbp');
+  let e1 = rangeErr(sbp, 70, 250, 'the systolic value', 'mmHg', false);
+  const e2 = rangeErr(dbp, 40, 150, 'the diastolic value', 'mmHg', false);
+  if (!e1 && !e2 && sbp <= dbp) e1 = 'Systolic must be higher than diastolic.';
+  showErr('c-sbp', e1); showErr('c-dbp', e2);
+  if (e1 || e2) { $(e1 ? 'c-sbp' : 'c-dbp').focus(); return; }
+  send({ cmd: 'calibrate', sbp: Math.round(sbp), dbp: Math.round(dbp) });
+}
+
+/* ECG gain calibration */
+function onGain(m) {
+  S.gain = strip(m);
+  renderGain(); updateControls();
+}
+function renderGain() {
+  const g = S.gain;
+  if (!g) setSt('gain-st', 'info', '', 'Gain status unknown');
+  else if (g.calibrated) setSt('gain-st', 'ok', 'ok', `Calibrated: gain ${fmt(g.gain, 1)} (${g.method === 'sine' ? 'reference sine' : 'entered'})`);
+  else setSt('gain-st', 'warn', 'warn', `Not calibrated: nominal gain ${fmt(g.gain, 0)}; the gain-invariant fallback model is used`);
+}
+function submitGain(ev) {
+  ev.preventDefault();
+  const ref = fieldNum('g-ref');
+  const e = rangeErr(ref, 0.2, 2.5, 'the reference amplitude', 'mV', false);
+  showErr('g-ref', e);
+  if (e) { $('g-ref').focus(); return; }
+  send({ cmd: 'calibrate_gain', ref_mvpp: ref });
+}
+function setGain() {
+  const g = fieldNum('g-val');
+  const e = rangeErr(g, 500, 2000, 'the measured gain', '', false);
+  showErr('g-val', e);
+  if (e) { $('g-val').focus(); return; }
+  send({ cmd: 'set_gain', gain: g });
+}
+
+/* alert */
+function onAlert(m) {
+  const a = strip(m);
+  S.alert = a;
+  const region = $('alert-region');
+  if (!a.active) { region.replaceChildren(); document.title = 'DiaGnostix-ECG'; return; }
+  const titles = { risk: 'Prediabetes / diabetes risk: blood test advised', spo2: 'Low blood oxygen (SpO₂) alert', fever: 'Fever alert' };
+  const ack = h('button', { type: 'button', class: 'btn primary', id: 'ack', disabled: S.conn !== 'open' }, 'Acknowledge');
+  ack.addEventListener('click', () => {
+    if (!send({ cmd: 'ack' })) return;
+    ack.dataset.busy = '1'; ack.disabled = true; ack.textContent = 'Acknowledging…';
+    setTimeout(() => { if (ack.isConnected) { delete ack.dataset.busy; ack.textContent = 'Acknowledge'; updateControls(); } }, 4000);
+  });
+  region.replaceChildren(h('div', { class: 'alert', 'data-kind': a.kind || 'none' },
+    icon('crit', a.kind === 'fever' ? 'serious' : 'crit'),
+    h('strong', null, titles[a.kind] || 'Device alert'),
+    h('p', null, a.message ? String(a.message) : 'The device raised an alert.'),
+    ack));
+  document.title = 'Alert · DiaGnostix-ECG';
+}
+
+/* errors and toasts */
+function onError(m) {
+  const msg = m.message ? String(m.message) : 'The device reported an error.';
+  toast(msg);
+  if (S.awaitProfile) { S.awaitProfile = false; clearTimeout(S.profTimer); renderProfStatus(['warn', 'warn', 'Not saved']); }
+}
+function toast(msg) {
+  const box = $('toasts');
+  while (box.children.length >= 4) box.firstElementChild.remove();
+  const t = h('div', { class: 'toast' },
+    icon('crit', 'crit'),
+    h('p', null, h('span', { class: 'sr-only' }, 'Error: '), msg),
+    h('button', { type: 'button', class: 'x', 'aria-label': 'Dismiss message', onclick: () => t.remove() }, icon('x', '')));
+  box.append(t);
+  setTimeout(() => t.remove(), 10000);
+}
+
+/* wiring */
+function init() {
+  buildQuestions();
+  loadHistory();
+  const r = resolveHost();
+  S.host = r.host;
+  S.fixedHost = r.fixed;
+  $('devaddr').value = S.host || '';
+  $('devform').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const v = cleanHost($('devaddr').value);
+    if (!v) { $('devaddr').focus(); return; }
+    S.host = v;
+    store.set(KEY_DEV, v);
+    reconnectNow();
+  });
+  $('reconnect').addEventListener('click', reconnectNow);
+  $('start').addEventListener('click', () => send({ cmd: 'start', duration_s: Number(radioVal('dur')) || 33 }));
+  $('cancel').addEventListener('click', () => send({ cmd: 'cancel' }));
+  const pf = $('pform');
+  pf.addEventListener('submit', submitProfile);
+  const dirty = () => { S.profDirty = true; renderFormBmi(); renderProfStatus(); };
+  pf.addEventListener('input', dirty);
+  pf.addEventListener('change', dirty);
+  $('cform').addEventListener('submit', submitCal);
+  $('c-clear').addEventListener('click', () => {
+    if (window.confirm('Clear the blood-pressure calibration and return to the population default?')) send({ cmd: 'clear_calibration' });
+  });
+  $('gform').addEventListener('submit', submitGain);
+  $('g-set').addEventListener('click', setGain);
+  $('g-clear').addEventListener('click', () => {
+    if (window.confirm('Forget the gain calibration? The device will use the gain-invariant fallback model.')) send({ cmd: 'clear_gain' });
+  });
+  $('hist-csv').addEventListener('click', exportHistory);
+  $('hist-clear').addEventListener('click', () => {
+    if (!window.confirm('Delete all saved results from this browser?')) return;
+    S.history = [];
+    store.del(KEY_HIST);
+    renderHistory();
+  });
+  $('beat-csv').addEventListener('click', exportBeats);
+
+  readTheme();
+  try {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', readTheme); else mq.addListener(readTheme);
+  } catch (e) { /* no theme change events */ }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { stopLoop(); return; }
+    for (const ch of charts) ch.flush();
+    startLoop();
+    if (S.conn === 'closed') reconnectNow();
+  });
+  window.addEventListener('online', () => { if (S.conn === 'closed') reconnectNow(); });
+  setInterval(() => {
+    /* a silent socket (Wi-Fi dropped without a close frame) is treated as lost */
+    if (S.conn === 'open' && performance.now() - S.lastMsg > 6000) { dropSocket(); setConn('closed'); retryLater(); return; }
+    if (S.conn === 'closed') renderConn();
+    renderSignals();
+    updateControls();
+  }, 1000);
+
+  renderConn(); renderVitals(); renderBmiTile(); renderSignals(); renderSession(); renderResult();
+  renderCal(); renderGain(); renderLifestyle(); renderProfStatus(); renderFormBmi(); renderHistory(); renderBeatInfo(); updateControls();
+  connect();
+  startLoop();
+}
+init();
+})();
+</script>
+</body>
+</html>
