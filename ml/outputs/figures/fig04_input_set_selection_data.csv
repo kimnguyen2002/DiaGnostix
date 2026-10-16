@@ -1,0 +1,10 @@
+input set,role,inputs,model,events per predictor,OOF AUROC (95 % CI),fold AUROC mean ± SD,"OOF AUROC, BP error SD 10 mmHg",selected
+ECG,candidate,32,compact LightGBM,40.625,0.784 (0.771–0.796),0.784 ± 0.013,,False
+ECG + profile,candidate,35,compact LightGBM,37.142857142857146,0.843 (0.833–0.853),0.844 ± 0.010,,True
+ECG + profile + BP,candidate,37,compact LightGBM,35.13513513513514,0.844 (0.834–0.854),0.844 ± 0.011,0.842853238132426,False
+ECG + profile + BP + lifestyle,candidate,39,compact LightGBM,33.333333333333336,0.844 (0.834–0.854),0.844 ± 0.011,0.8428628883806549,False
+Profile,reference (no ECG),3,compact LightGBM,433.3333333333333,0.828 (0.818–0.839),0.828 ± 0.014,,False
+Profile + BP,reference (no ECG),5,compact LightGBM,260.0,0.831 (0.821–0.842),0.831 ± 0.015,0.8295733809337872,False
+Profile + BP + lifestyle,reference (no ECG),7,compact LightGBM,185.71428571428572,0.832 (0.821–0.842),0.832 ± 0.012,0.8274655547498186,False
+Profile (logistic regression),reference (no ECG),3,logistic regression,433.3333333333333,0.831 (0.820–0.842),0.831 ± 0.014,,False
+"ECG, 28-feature subset",sensitivity analysis,28,compact LightGBM,46.42857142857143,0.778 (0.766–0.790),0.779 ± 0.012,,False

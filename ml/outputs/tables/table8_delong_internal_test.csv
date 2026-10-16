@@ -1,0 +1,7 @@
+comparator,comparator AUROC (95 % CI),ΔAUROC (primary − comparator),DeLong P
+Fallback (Gain-invariant ECG + profile),0.876 (0.850–0.901),+0.003,0.2514076317751138
+ECG-only,0.845 (0.813–0.878),+0.033,0.004168380006325022
+Profile (no ECG),0.852 (0.826–0.879),+0.026,0.00011763146143378704
+Profile (logistic regression) (no ECG),0.851 (0.824–0.878),+0.028,1.5050923788514856e-05
+"DiaCardia lead I (published, NeuroKit2 features)",0.844 (0.811–0.877),+0.034,0.0041954159946361235
+LightGBM on the 28 published NeuroKit2 features,0.843 (0.810–0.875),+0.035,0.0022121154856678113

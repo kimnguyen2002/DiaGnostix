@@ -1,0 +1,4 @@
+model,cohort,AUROC prediabetes range vs normoglycaemia,n prediabetes range,AUROC vs ADA definition,ADA prevalence %,AUROC SQI-pass only,SQI pass %
+Primary,Internal test,0.837 (0.795–0.879),69,0.818 (0.794–0.842),22.613365155131266,0.879 (0.854–0.904),99.34367541766109
+ECG-only,Internal test,0.796 (0.739–0.853),69,0.759 (0.732–0.787),22.613365155131266,0.846 (0.813–0.878),99.34367541766109
+ECG-only,External,0.727 (0.693–0.761),200,0.732 (0.711–0.752),33.876221498371336,0.756 (0.731–0.781),97.35342019543974

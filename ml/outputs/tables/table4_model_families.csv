@@ -1,0 +1,7 @@
+,family,MCU-deployable,structure,flash (KB),OOF AUROC (95 % CI),fold AUROC mean ± SD,"Δ vs selected (DeLong P, OOF)",tuning trials,selected
+LightGBM (compact),lgbm,True,"220 trees, 660 splits",16.38671875,0.843 (0.833–0.853),0.844 ± 0.010,-0.002 (P = 0.24),60,False
+Logistic regression,lr,True,36 coefficients,1.1015625,0.845 (0.835–0.855),0.845 ± 0.013,—,30,True
+MLP,mlp,True,"35-64-32-1 (4,417 weights)",18.07421875,0.842 (0.832–0.852),0.843 ± 0.011,-0.003 (P = 0.024),4,False
+XGBoost,xgb,False,"450 trees, 1,349 splits",33.2119140625,0.842 (0.832–0.852),0.842 ± 0.009,-0.003 (P = 0.0512),40,False
+Random forest,rf,False,"100 trees, 10,036 splits",207.26171875,0.835 (0.824–0.845),0.835 ± 0.012,-0.010 (P = 7.51e-06),20,False
+LightGBM (unconstrained),lgbm,False,"825 trees, 2,475 splits",60.6982421875,0.843 (0.833–0.853),0.844 ± 0.010,-0.002 (P = 0.237),40,False

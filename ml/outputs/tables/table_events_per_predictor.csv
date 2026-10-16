@@ -1,0 +1,8 @@
+,candidate predictors,development events,events per predictor
+ECG,32.0,1300.0,40.625
+ECG + profile,35.0,1300.0,37.142857142857146
+ECG + profile + BP,37.0,1300.0,35.13513513513514
+ECG + profile + BP + lifestyle,39.0,1300.0,33.333333333333336
+Profile,3.0,1300.0,433.3333333333333
+Profile + BP,5.0,1300.0,260.0
+Profile + BP + lifestyle,7.0,1300.0,185.71428571428572

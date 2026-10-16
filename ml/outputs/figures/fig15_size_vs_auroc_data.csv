@@ -1,0 +1,10 @@
+model,inputs,role,structure,flash (KB),inference RAM (B),operations,OOF AUROC,test AUROC
+LightGBM (compact),ECG + profile,MCU candidate,"220 trees, 660 splits",16.38671875,344.0,220 tree walks,0.8430000557817816,0.8832948483513745
+Logistic regression,ECG + profile,selected family,36 coefficients,1.1015625,280.0,35 MACs,0.8450513750209182,0.8783607622250994
+MLP,ECG + profile,MCU candidate,"35-64-32-1 (4,417 weights)",18.07421875,792.0,"4,320 MACs",0.8418287778211636,0.8777067399883433
+XGBoost,ECG + profile,reference,"450 trees, 1,349 splits",33.2119140625,344.0,450 tree walks,0.8418781725888325,0.8838687862326096
+Random forest,ECG + profile,reference,"100 trees, 10,036 splits",207.26171875,344.0,100 tree walks,0.8347745300384893,0.8764387376925918
+LightGBM (unconstrained),ECG + profile,reference,"825 trees, 2,475 splits",60.6982421875,344.0,825 tree walks,0.8432396943158367,0.8832726026970631
+Logistic regression: Fallback (gain-invariant),Gain-invariant ECG + profile,deployed,26 coefficients,0.7890625,200.0,25 MACs,0.8436585039326157,0.8757179784929013
+LightGBM (compact): ECG-only,ECG,deployed,"230 trees, 920 splits",21.8125,320.0,230 tree walks,0.7836211859206784,0.8454460921059072
+DiaCardia lead I (published),28 NeuroKit2 features (not MCU-computable),benchmark,"10 × LightGBM, 3791 trees, 219,526 splits",4546.423828125,,3791 tree walks,,0.844075759800323

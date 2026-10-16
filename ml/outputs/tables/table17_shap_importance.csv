@@ -1,0 +1,36 @@
+,mean |SHAP| (%),group
+age,26.24988015180415,"Profile (age, sex, BMI)"
+BMI,16.13146722729007,"Profile (age, sex, BMI)"
+male_sex,9.885168569947576,"Profile (age, sex, BMI)"
+mean_r_uv,5.401159547325087,ECG: amplitudes
+hr_median_bpm,5.2942999193637235,ECG: timing and heart-rate variability
+hr_min_bpm,4.047512356946079,ECG: timing and heart-rate variability
+mean_s_uv,3.500461513348132,ECG: amplitudes
+mean_t_uv,3.2159585517868634,ECG: amplitudes
+sd_pp_s,2.7918237247613966,ECG: timing and heart-rate variability
+t_r_ratio,2.3678842901139117,ECG: T/R amplitude ratio
+hr_mean_bpm,2.2516721301375076,ECG: timing and heart-rate variability
+qt_peak_ms,2.162093416228309,ECG: timing and heart-rate variability
+qtc_peak_ms,1.5817934956617878,ECG: timing and heart-rate variability
+qrs_sd_ms,1.5596704897718332,ECG: timing and heart-rate variability
+mean_q_uv,1.4764844031931312,ECG: amplitudes
+sd_qq_s,1.2700623675840403,ECG: timing and heart-rate variability
+hr_max_bpm,1.2253864612281298,ECG: timing and heart-rate variability
+sd_s_uv,1.1139693577333614,ECG: amplitudes
+hr_sd_bpm,1.0517638161150173,ECG: timing and heart-rate variability
+sd_p_uv,1.030643399806805,ECG: amplitudes
+rmssd_ms,0.8569816077600475,ECG: timing and heart-rate variability
+sd_ss_s,0.7427089578469778,ECG: timing and heart-rate variability
+sd_r_uv,0.7184127061767694,ECG: amplitudes
+pr_peak_ms,0.7057036480752306,ECG: timing and heart-rate variability
+sd_q_uv,0.6423794303739127,ECG: amplitudes
+mean_ss_s,0.5203583202436799,ECG: timing and heart-rate variability
+mean_pp_s,0.4892421709944506,ECG: timing and heart-rate variability
+mean_qq_s,0.48774094550081326,ECG: timing and heart-rate variability
+mean_rr_s,0.3490621589734084,ECG: timing and heart-rate variability
+sd_tt_s,0.2952968660546532,ECG: timing and heart-rate variability
+mean_tt_s,0.20762773345755736,ECG: timing and heart-rate variability
+sd_rr_s,0.1718567513761572,ECG: timing and heart-rate variability
+qrs_mean_ms,0.08508646828748434,ECG: timing and heart-rate variability
+mean_p_uv,0.0741990005665028,ECG: amplitudes
+sd_t_uv,0.044188044165436584,ECG: amplitudes

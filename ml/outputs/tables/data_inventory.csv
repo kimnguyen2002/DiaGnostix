@@ -1,0 +1,12 @@
+file,content,rows / files,columns
+participant_characteristics.csv,"Internal cohort: demographics, vitals, FPG, HbA1c, label, development/test flag",16766,17.0
+external_cohort_characteristics.csv,"External cohort: label, FPG, HbA1c, diabetes treatment",2598,5.0
+ecg_feature_data/ecg_features_1-lead.csv,28 NeuroKit2 lead-I features (internal),16766,28.0
+ecg_feature_data/ecg_features_12-leads.csv,269 NeuroKit2 12-lead features (internal),16766,269.0
+ecg_feature_data/ecg_features_12-leads_external_cohort.csv,269 NeuroKit2 12-lead features (external),2456,269.0
+feature_list/feature_list_28_1-lead.csv,Names of the 28 lead-I features,28,1.0
+feature_list/feature_list_269_12-lead.csv,Names of the 269 12-lead features,269,1.0
+raw_ecg_data/*.csv,"Internal raw 12-lead ECG, 500 Hz",16766,12.0
+external_ecg_data/*.csv,"External raw 12-lead ECG, 500 Hz",2456,12.0
+model_1-lead/*.pkl,Published DiaCardia lead-I LightGBM: 10 fold models + threshold,11,
+model_12-lead/*.pkl,Published DiaCardia 12-lead LightGBM: 10 fold models + threshold,11,

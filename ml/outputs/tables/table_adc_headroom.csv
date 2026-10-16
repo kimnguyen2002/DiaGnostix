@@ -1,0 +1,3 @@
+,records,"positive swing at GPIO4, median (mV)","positive swing, 99th percentile (mV)",headroom above REF (mV),records reaching the ADC limit (%)
+internal,16766.0,526.4118002166433,1456.2169664076607,1450.0,1.0557079804365979
+external,2456.0,527.2329974417919,1339.1319596132096,1450.0,0.5293159609120521

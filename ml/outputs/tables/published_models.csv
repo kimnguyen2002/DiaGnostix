@@ -1,0 +1,3 @@
+model,fold models,features,trees (total),split nodes,leaves,num_leaves (fold 1),max_depth (fold 1),learning_rate (fold 1),averaged Youden threshold,C node table if exported (MB)
+DiaCardia lead I (model_1-lead),10,28,3791,219526,223317,237,9,0.0005652825170090584,0.13017968496896495,4.655538
+DiaCardia 12-lead (model_12-lead),10,269,17873,1061854,1079727,178,10,0.0001883061203103202,0.13016469872500183,22.51341

@@ -1,0 +1,10 @@
+model,family,OOF AUROC,flash (KB),structure,selected
+Primary,LightGBM (compact),0.8430000557817816,16.38671875,"220 trees, 660 splits",False
+Primary,Logistic regression,0.8450513750209182,1.1015625,36 coefficients,True
+Primary,MLP,0.8418287778211636,18.07421875,"35-64-32-1 (4,417 weights)",False
+Fallback (gain-invariant),LightGBM (compact),0.8426183410498133,16.1328125,"170 trees, 680 splits",False
+Fallback (gain-invariant),Logistic regression,0.8436585039326157,0.7890625,26 coefficients,True
+Fallback (gain-invariant),MLP,0.8412436827132259,2.27734375,25-16-1 (433 weights),False
+ECG-only,LightGBM (compact),0.7836211859206784,21.8125,"230 trees, 920 splits",True
+ECG-only,Logistic regression,0.7653426674847994,1.0078125,33 coefficients,False
+ECG-only,MLP,0.7778025603837786,7.00390625,"32-32-16-1 (1,601 weights)",False

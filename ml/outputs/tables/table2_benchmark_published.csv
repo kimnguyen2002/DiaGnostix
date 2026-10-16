@@ -1,0 +1,4 @@
+,CV AUROC (OOF),Internal test AUROC (95 % CI),Sensitivity %,Specificity %,External AUROC (95 % CI)
+DiaCardia lead I (published models),—,0.844 (0.811–0.877),82.3,70.2,0.746 (0.721–0.772)
+"DiaCardia 12-lead (published models, reference)",—,0.851 (0.820–0.883),85.7,70.2,0.785 (0.761–0.808)
+"LightGBM, 28 published lead-I features (this study)",0.778,0.843 (0.810–0.875),78.2,73.8,0.746 (0.721–0.772)

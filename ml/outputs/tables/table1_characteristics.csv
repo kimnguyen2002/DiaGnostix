@@ -1,0 +1,16 @@
+Characteristic,"Normoglycaemia (n = 15,319)","Prediabetes/diabetes (n = 1,447)",P value,missing (n)
+"Age, years",47.1 ± 12.9,58.9 ± 11.6,< 0.0001,0
+"BMI, kg/m²",22.5 ± 3.6,25.7 ± 4.6,< 0.0001,0
+"Height, cm",163.4 ± 8.5,164.4 ± 9.0,< 0.0001,0
+"Weight, kg",60.3 ± 12.4,69.8 ± 15.4,< 0.0001,0
+"Systolic BP, mmHg",120.5 ± 17.4,133.4 ± 18.5,< 0.0001,0
+"Diastolic BP, mmHg",73.9 ± 12.5,81.1 ± 12.3,< 0.0001,0
+"Pulse rate, /min",64.8 ± 9.4,69.8 ± 11.1,< 0.0001,1
+"Fasting plasma glucose, mg/dL",86.7 ± 7.8,119.4 ± 31.9,< 0.0001,1530
+"HbA1c, %",5.4 ± 0.2,6.5 ± 0.9,< 0.0001,6017
+Male sex,"6,072 (39.6 %)",871 (60.2 %),< 0.0001,0
+Smoking,"2,250 (14.7 %)",280 (19.4 %),< 0.0001,0
+Diabetes treatment,0 (0.0 %),492 (34.0 %),,0
+Drinking: rarely,"6,247 (40.8 %)",554 (38.3 %),< 0.0001,301
+Drinking: occasionally,"5,534 (36.1 %)",422 (29.2 %),,301
+Drinking: regularly,"3,328 (21.7 %)",380 (26.3 %),,301

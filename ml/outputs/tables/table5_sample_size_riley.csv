@@ -1,0 +1,7 @@
+parameters assumed,criterion,records needed,events needed,available (development)
+35 candidate inputs,(i) global shrinkage ≥ 0.9,2389,206,15090
+35 candidate inputs,(ii) optimism in R² ≤ 0.05,1460,126,15090
+35 candidate inputs,(iii) intercept within ± 0.05,121,11,15090
+3 × 35 (allowance for non-linear terms),(i) global shrinkage ≥ 0.9,7165,618,15090
+3 × 35 (allowance for non-linear terms),(ii) optimism in R² ≤ 0.05,4378,378,15090
+3 × 35 (allowance for non-linear terms),(iii) intercept within ± 0.05,121,11,15090

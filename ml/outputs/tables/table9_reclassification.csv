@@ -1,0 +1,4 @@
+,cfNRI,NRI_events,NRI_nonevents,IDI
+Primary vs Profile: does the ECG add information?,+0.278 (+0.120 to +0.442),+0.238 (+0.083 to +0.392),+0.040 (-0.012 to +0.090),+0.053 (+0.035 to +0.072)
+Primary vs ECG-only: do the non-ECG inputs add information?,+0.533 (+0.377 to +0.706),+0.224 (+0.068 to +0.384),+0.308 (+0.260 to +0.359),+0.067 (+0.041 to +0.096)
+"ECG-only vs Profile: ECG alone vs age, sex, BMI alone",-0.352 (-0.535 to -0.184),-0.116 (-0.282 to +0.051),-0.236 (-0.288 to -0.187),-0.014 (-0.043 to +0.012)

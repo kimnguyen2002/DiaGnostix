@@ -1,0 +1,9 @@
+file,content,bytes,details
+dgx_model_primary.h,"Primary (DGX_PRI), ECG + profile",1128,36 coefficients
+dgx_model_fallback.h,"Fallback (gain-invariant) (DGX_FB), Gain-invariant ECG + profile",808,26 coefficients
+dgx_model_ecg_only.h,"ECG-only (DGX_ECG), ECG",22336,"230 trees, 920 splits"
+dgx_model_mlp.h,"MLP, plain C (optional)",18508,"widths [35, 64, 32, 1]"
+dgx_mlp_int8_tflite.h,"MLP, TFLite int8 flatbuffer (optional)",7120,"input q (0.03921568766236305, -1), output q (0.00390625, -128)"
+../models/dgx_mlp_fp32.tflite,"MLP, TFLite float32 (phone / cloud)",19688,
+../models/dgx_mlp.h5,Keras HDF5 model,92056,
+dgx_dsp_spec.h,500 Hz biquads + extractor constants,1179,
