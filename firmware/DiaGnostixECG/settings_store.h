@@ -3,21 +3,13 @@
 #include <Preferences.h>
 
 #include "app_types.h"
-#include "bp_estimator.h"
 
-// Persists the user profile, the blood-pressure calibration, the AD8232 gain
-// calibration and the result counter in NVS flash.
+// Persists the device-level settings in NVS flash: the AD8232 gain calibration (a property of the
+// board) and the result counter. Per-user data (profile, blood-pressure calibration, results) is in
+// user_store.h.
 class SettingsStore {
  public:
   bool begin();
-
-  bool loadProfile(UserProfile* p);
-  void saveProfile(const UserProfile& p);
-  void clearProfile();
-
-  bool loadCalibration(dsp::BpCalibration* c);
-  void saveCalibration(const dsp::BpCalibration& c);
-  void clearCalibration();
 
   bool loadGain(EcgGain* g);
   void saveGain(const EcgGain& g);
@@ -27,7 +19,7 @@ class SettingsStore {
 
  private:
   // Bump when the layout of a stored struct changes; old records are ignored.
-  // 2: profile with age, sex, height, weight and optional lifestyle answers.
+  // 2: DiaGnostix-ECG profile (lifestyle answers instead of the DiaBD questionnaire).
   static constexpr uint8_t kSchemaVersion = 2;
 
   template <typename T>
@@ -68,18 +60,6 @@ inline void SettingsStore::save(const char* key, const T& value) {
   if (!ok_) return;
   settings_detail::Record<T> rec{kSchemaVersion, value};
   prefs_.putBytes(key, &rec, sizeof(rec));
-}
-
-inline bool SettingsStore::loadProfile(UserProfile* p) { return load("profile", p) && p->valid; }
-inline void SettingsStore::saveProfile(const UserProfile& p) { save("profile", p); }
-inline void SettingsStore::clearProfile() {
-  if (ok_) prefs_.remove("profile");
-}
-
-inline bool SettingsStore::loadCalibration(dsp::BpCalibration* c) { return load("bp_cal", c); }
-inline void SettingsStore::saveCalibration(const dsp::BpCalibration& c) { save("bp_cal", c); }
-inline void SettingsStore::clearCalibration() {
-  if (ok_) prefs_.remove("bp_cal");
 }
 
 inline bool SettingsStore::loadGain(EcgGain* g) {
