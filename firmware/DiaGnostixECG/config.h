@@ -15,7 +15,7 @@
 #error "DiaGnostix-ECG is written for the ESP32-S3: choose Tools > Board > esp32 > ESP32S3 Dev Module"
 #endif
 
-#define DIAGNOSTIX_FIRMWARE_VERSION "2.0.0"
+#define DIAGNOSTIX_FIRMWARE_VERSION "3.0.0"
 #define DIAGNOSTIX_DEVICE_NAME "DiaGnostix-ECG"
 
 // ---------------------------------------------------------------------------
@@ -67,6 +67,7 @@ static_assert(DIAGNOSTIX_PIN_IS_ADC1(PIN_ECG_OUTPUT) && DIAGNOSTIX_PIN_IS_ADC1(P
 #define ECG_SAMPLE_RATE_HZ 500       // the models were trained on 500 Hz features
 #define ECG_STREAM_DECIMATION 2      // 250 Hz to the dashboard
 #define ECG_INVERT false             // true if the R wave is negative (RA and LA swapped)
+#define ECG_DISPLAY_MAINS_HZ 60      // notch on the dashboard trace: 60 Hz (Taiwan, Americas), 50 Hz (Europe, most of Asia)
 #define ECG_ADC_REF_MV 1650.0f       // AD8232 REF (mid-supply); removed again by the median
 #define ECG_ADC_MAX_MV 3100          // readings at or above this are clipped (11 dB attenuation)
 #define ECG_NOMINAL_GAIN 1100.0f     // AD8232 module: in-amp x100, op-amp x11 (calibrate per board)
@@ -126,20 +127,33 @@ static_assert(DIAGNOSTIX_PIN_IS_ADC1(PIN_ECG_OUTPUT) && DIAGNOSTIX_PIN_IS_ADC1(P
 #define SAFETY_HOLD_S 10
 
 // ---------------------------------------------------------------------------
-// Connectivity
+// Connectivity: access point with captive portal, user accounts
 // ---------------------------------------------------------------------------
-#define WIFI_CONNECT_TIMEOUT_MS 15000
-#define WIFI_HOSTNAME "diagnostix"  // http://diagnostix.local
+// The device always runs its own Wi-Fi network. Joining it opens the sign-in page automatically
+// (captive portal); each user has an account with their own profile, calibration and results.
 #define AP_SSID "DiaGnostix"
-#define AP_PASSWORD "diagnostix"  // at least 8 characters
+#define AP_PASSWORD "diagnostix"     // WPA2, at least 8 characters
+#define AP_CHANNEL 6
+#define AP_MAX_CLIENTS 4
+#define WIFI_HOSTNAME "diagnostix"   // http://diagnostix.local (also reachable at http://192.168.4.1)
+#define WIFI_CONNECT_TIMEOUT_MS 15000  // optional second connection to a home network (secrets.h)
+
+#define MAX_USERS 20                 // accounts stored on the FAT partition of the N16R8
+#define MAX_LOGIN_SESSIONS 16        // signed-in browsers / phones
+#define LOGIN_SESSION_TTL_S (12 * 3600)
+#define PASSWORD_MIN_LENGTH 6
+#define PBKDF2_ITERATIONS 10000      // PBKDF2-HMAC-SHA256 (hardware SHA on the ESP32-S3)
+#define HISTORY_MAX_RESULTS 300      // per user, oldest results are dropped
+#define HISTORY_SEND_RESULTS 60      // sent to the dashboard on request
+
 // 0 = Wi-Fi and the web dashboard only (default).
 // 1 = also advertise the Bluetooth LE service for the future mobile app; this
 //     needs the NimBLE-Arduino library and uses extra flash and RAM.
 #define ENABLE_BLE 0
 
-// Wi-Fi credentials live in secrets.h next to this file (not committed). Copy
-// secrets.example.h to secrets.h and fill it in. Without it the device starts
-// its own access point.
+// Optional: a home Wi-Fi network in secrets.h (copy secrets.example.h; not committed). The device
+// then also joins that network (dashboard at its IP / diagnostix.local); its own access point and
+// captive portal stay on either way.
 #if __has_include("secrets.h")
 #include "secrets.h"
 #endif
