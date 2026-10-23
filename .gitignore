@@ -16,6 +16,8 @@ ml/outputs/deploy/parity_test/
 # Firmware build outputs and credentials
 firmware/test/test_dsp
 firmware/test/test_ecg
+firmware/test/test_smoothing
+firmware/test/bench_latency
 firmware/DiaGnostixECG/secrets.h
 build/
 

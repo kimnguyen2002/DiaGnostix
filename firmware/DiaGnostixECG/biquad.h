@@ -24,6 +24,14 @@ class Biquad {
     return Biquad((1 + c) / 2, -(1 + c), (1 + c) / 2, 1 + alpha, -2 * c, 1 - alpha);
   }
 
+  // Notch at f0_hz (mains interference on the display stream); q = f0 / bandwidth.
+  static Biquad notch(float fs_hz, float f0_hz, float q = 30.0f) {
+    const float w0 = 2.0f * static_cast<float>(M_PI) * f0_hz / fs_hz;
+    const float alpha = std::sin(w0) / (2.0f * q);
+    const float c = std::cos(w0);
+    return Biquad(1.0f, -2.0f * c, 1.0f, 1.0f + alpha, -2.0f * c, 1.0f - alpha);
+  }
+
   float process(float x) {
     const float y = b0_ * x + z1_;
     z1_ = b1_ * x - a1_ * y + z2_;

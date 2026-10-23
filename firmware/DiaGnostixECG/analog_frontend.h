@@ -8,6 +8,7 @@
 #include <atomic>
 #include <cmath>
 
+#include "biquad.h"
 #include "config.h"
 #include "ecg_risk.h"
 #include "qrs_detector.h"
@@ -22,6 +23,10 @@ static_assert(ECG_SAMPLE_RATE_HZ == dgx::kFs, "the risk models were trained on 5
 // waveform and, while a capture is armed, records the raw millivolts that the
 // risk model analyses (ecg_risk.h). Lead-off samples are marked, not dropped,
 // so the windows keep their timing.
+//
+// The dashboard trace is filtered for display only (0.5-40 Hz band-pass and a
+// mains notch, causal biquads): it removes baseline wander and mains hum so
+// the trace does not jitter. The risk analysis always uses the raw capture.
 class AnalogFrontEnd {
  public:
   struct BeatEvent {
@@ -59,6 +64,8 @@ class AnalogFrontEnd {
   QueueHandle_t beat_queue_ = nullptr;
   QueueHandle_t wave_queue_ = nullptr;
   dsp::QrsDetector qrs_;
+  dsp::BandPass display_bp_{ECG_SAMPLE_RATE_HZ, 0.5f, 40.0f};
+  dsp::Biquad display_notch_ = dsp::Biquad::notch(ECG_SAMPLE_RATE_HZ, ECG_DISPLAY_MAINS_HZ, 30.0f);
   dsp::ThermistorConfig ntc_;
   std::atomic<bool> leads_on_{false};
   std::atomic<float> hr_bpm_{NAN};
@@ -145,6 +152,8 @@ inline void AnalogFrontEnd::run() {
 
     if (on != was_on) {
       qrs_.reset();  // restart threshold learning after (re)attachment
+      display_bp_.reset(static_cast<float>(mv));
+      display_notch_.reset(0.0f);
       leads_on_.store(on);
       if (!on) hr_bpm_.store(NAN);
       was_on = on;
@@ -157,8 +166,9 @@ inline void AnalogFrontEnd::run() {
         xQueueSend(beat_queue_, &ev, 0);
         hr_bpm_.store(qrs_.heartRateBpm());
       }
-      if (n % ECG_STREAM_DECIMATION == 0) {
-        const int16_t v = static_cast<int16_t>(mv);
+      const float shown = display_notch_.process(display_bp_.process(static_cast<float>(mv)));
+      if (n % ECG_STREAM_DECIMATION == 0) {  // 40 Hz low-pass above: no aliasing at 250 Hz
+        const int16_t v = static_cast<int16_t>(lroundf(shown));
         xQueueSend(wave_queue_, &v, 0);  // dropped if nobody is reading
       }
     }
