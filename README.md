@@ -4,11 +4,16 @@
 
 The device:
 1. records three 10-second lead-I ECG windows with an AD8232 front end;
-2. computes 32 ECG features and a signal-quality index on the ESP32-S3;
+2. analyses each window on the second core while the next one is recorded: 32 ECG features and a signal-quality index;
 3. combines them with the user's age, sex and BMI;
-4. runs a small risk model in plain C.
+4. runs a small risk model in plain C, right after the recording.
 
 When the risk is high, the LED flashes and the dashboard asks the user to visit a clinic or hospital for a fasting glucose or HbA1c test.
+
+The device needs no app, cloud or internet connection:
+- It runs its own Wi-Fi network. Joining it opens a sign-in page served by the device (captive portal).
+- Each user has an account. Their profile, blood-pressure calibration and results are stored on the device.
+- Live vital signs are filtered for outliers and jitter, and a result whose windows disagree is flagged as borderline.
 
 > **Research prototype, not a medical device.** DiaGnostix does not diagnose diabetes. The models were validated on clinical ECGs passed through a simulation of the device's signal chain; validation with recordings from the device itself is still required.
 
@@ -19,11 +24,14 @@ When the risk is high, the LED flashes and the dashboard asks the user to visit 
 | Internal test AUROC (n = 1,676) | **0.878** (95 % CI 0.853–0.903) |
 | High-risk tier, internal test | sensitivity 82.3 %, specificity 76.3 %, NPV 97.8 % |
 | External AUROC, ECG-only model (n = 2,456) | **0.757** (0.732–0.782) |
-| Firmware, ESP32-S3 N16R8 | 1.15 MB flash (36 % of the app partition), 69 KB static RAM, ≈ 360 KB PSRAM |
+| Test–retest (simulated, 10 dB noise) | same risk tier in 95.8 % of repeats; 99.9 % when not flagged borderline |
+| Displayed vital signs | jitter reduced by 86–93 %, real changes followed within 2–12 s |
+| Firmware, ESP32-S3 N16R8 | 1.23 MB flash (39 % of the app partition), 76 KB static RAM, ≈ 364 KB PSRAM |
 
 ## Contents
 
 - [How it works](#how-it-works)
+- [Captive portal and accounts](#captive-portal-and-accounts)
 - [Hardware](#hardware)
 - [Repository structure](#repository-structure)
 - [Getting started](#getting-started)
@@ -41,14 +49,15 @@ When the risk is high, the LED flashes and the dashboard asks the user to visit 
         ▼
  ESP32-S3 ADC1 GPIO4, 500 Hz, analogReadMilliVolts()  ──►  3 s warm-up + 3 × 10-s windows (PSRAM)
         │
-        ▼  per window (firmware/DiaGnostixECG/ecg_features.h)
+        ▼  per window, on core 0 while the next window is recorded (analysis_worker.h, ecg_features.h)
  µV = (mV − 1650) × 1000 / gain → median removal → 0.5–40 Hz zero-phase band-pass
  → R peaks (gradient/boxcar + T-wave rejection) → P/Q/S/T → 32 features + signal-quality index
         │
         ▼  risk_model.h: model chosen by what is available
  primary (ECG + profile, gain calibrated) │ fallback (no ECG amplitudes) │ ECG-only (no profile)
         │
-        ▼  median score of the windows that pass the quality check (≥ 2) → calibrated risk → tier
+        ▼  right after the last window: median score of the windows that pass the quality check (≥ 2)
+        ▼  → calibrated risk → tier; "borderline" if the good windows fall on both sides of a tier boundary
  high     → LED flashes, alert: "visit a clinic or hospital for a fasting glucose or HbA1c test"
  elevated → LED blinks: "ask for a test at your next check-up"
  low      → LED on for 2 s
@@ -59,7 +68,28 @@ When the risk is high, the LED flashes and the dashboard asks the user to visit 
 - the NTC gives skin temperature, with a fever warning;
 - the BME280 records room conditions.
 
+**Stable live values.** Every displayed vital sign passes `smoothing.h`:
+1. a Hampel filter rejects spikes;
+2. change detection follows a real change at once;
+3. exponential smoothing reduces noise;
+4. a display dead-band stops the last digit from flickering.
+
+The live ECG trace is band-passed (0.5–40 Hz) with a 60 Hz notch. That filter is for display only; the model analyses the unfiltered signal.
+
 **Training and deployment.** The models are trained in Python on device-matched features: the AD8232 filters and the ESP32-S3 ADC are simulated before feature extraction. They are then exported as dependency-free C headers, and the firmware needs no machine-learning library. The C/C++ implementation reproduces the Python reference to ≈ 10⁻¹¹ for the features and ≈ 10⁻¹⁶ for the model scores. A boot self-test checks this on the device.
+
+## Captive portal and accounts
+
+| | |
+|---|---|
+| Wi-Fi network | `DiaGnostix`, password `diagnostix` (WPA2, up to 4 phones); device at `192.168.4.1` |
+| Sign-in page | opens by itself after joining: DNS answers point to the device and the phones' connectivity checks are redirected to it |
+| Accounts | up to 20; passwords stored as PBKDF2-HMAC-SHA256 hashes (10,000 iterations, random salt); sign-in tokens in RAM, 12 h |
+| Per-user data | profile, BP calibration and the last 300 results, on the flash FAT partition (`/u/<id>/`) |
+| Privacy | results, history and risk alerts go only to their owner; during a measurement the live signals go only to the person being measured |
+| Optional | `secrets.h` adds a home Wi-Fi network (dashboard also at `diagnostix.local`); the access point stays on |
+
+The message format is in [docs/protocol.md](docs/protocol.md).
 
 ## Hardware
 
@@ -81,14 +111,18 @@ The bill of materials, electrode placement, AD8232 gain calibration and electric
 DiaGnostix/
 ├── firmware/
 │   ├── DiaGnostixECG/           Arduino sketch for the ESP32-S3 N16R8
-│   │   ├── DiaGnostixECG.ino    application: sessions, model choice, alerts, commands
+│   │   ├── DiaGnostixECG.ino    application: accounts, sessions, model choice, alerts, commands
 │   │   ├── ecg_features.h       on-device ECG feature extractor (PSRAM buffers)
 │   │   ├── risk_model.h         the three risk models behind one interface
-│   │   ├── ecg_risk.h           windows → features → scores → median → risk tier
+│   │   ├── ecg_risk.h           windows → features → scores → median → risk tier (+ borderline flag)
+│   │   ├── analysis_worker.h    analyses each window on core 0 while the next one is recorded
+│   │   ├── smoothing.h          outlier rejection and smoothing of the displayed vital signs
+│   │   ├── web_interface.h      access point, captive portal, WebSocket server
+│   │   ├── user_store.h         accounts (PBKDF2 password hashes) and per-user data
 │   │   ├── dgx_model_*.h        generated risk models (primary, fallback, ECG-only)
 │   │   ├── dgx_dsp_spec.h, dgx_selftest_vector.h   generated filter constants and boot self-test
 │   │   └── …                    sensor front ends, session, JSON protocol, Wi-Fi/BLE, LED
-│   ├── test/                    host tests (signal processing; extractor and models vs Python)
+│   ├── test/                    host tests (signal processing, smoother; extractor and models vs Python), latency benchmark
 │   └── web/index.html           dashboard source
 ├── ml/
 │   ├── dgx/                     Python package: device simulation, features, models, statistics, export
@@ -97,7 +131,9 @@ DiaGnostix/
 │   └── environment.yml
 ├── tools/
 │   ├── embed_dashboard.py       compresses the dashboard into the sketch
-│   └── mock_device.py           device simulator for dashboard and app development
+│   ├── mock_device.py           device simulator for dashboard and app development
+│   ├── repeatability.py         test–retest stability of the risk output under noise
+│   └── smoothing_figure.py      benchmark figure and table of the vital-sign smoother
 ├── docs/                        hardware, wiring, device protocol, deployment
 └── Dataset/                     DiaBD diabetes dataset (CSV)
 ```
@@ -111,7 +147,7 @@ DiaGnostix/
    - ArduinoJson 7;
    - SparkFun MAX3010x Pulse and Proximity Sensor Library;
    - Adafruit BME280 Library.
-2. Copy `firmware/DiaGnostixECG/secrets.example.h` to `secrets.h` and enter your Wi-Fi network. Without it, the device opens the access point `DiaGnostix` (password `diagnostix`).
+2. Optional: copy `firmware/DiaGnostixECG/secrets.example.h` to `secrets.h` and enter a home Wi-Fi network. The device always runs its own network `DiaGnostix`; with `secrets.h` it also joins yours.
 3. Open `firmware/DiaGnostixECG/DiaGnostixECG.ino` and choose these settings:
 
    | Setting | Value |
@@ -124,7 +160,8 @@ DiaGnostix/
    Then upload.
 4. In the Serial Monitor (115200 baud), check for these lines:
    - `flash 16 MB, PSRAM 8 MB`;
-   - `[model] self-test passed`.
+   - `[model] self-test passed`, with the analysis time of one 10-s window;
+   - `[auth] … user account(s) on the FAT partition`.
 
 ### 2. Run the host tests
 
@@ -133,9 +170,13 @@ make -C firmware/test
 ```
 
 - **Signal-processing tests:** the QRS detector, PPG, pulse arrival time, blood pressure and thermistor.
+- **Smoother tests:** jitter, spike rejection, step response and display dead-band on simulated noisy readings.
 - **Pipeline tests:**
   - the ECG feature extractor and the three model headers against the Python golden vectors;
-  - the session logic: median of windows, lead-off, low signal quality, inverted leads, model choice and gain calibration.
+  - the session logic: median of windows, lead-off, low signal quality, inverted leads, model choice and gain calibration;
+  - window-by-window analysis gives exactly the batch result, and the borderline flag is set when windows straddle a tier boundary.
+
+`make -C firmware/test bench` times the per-window analysis and the final step.
 
 ### 3. Develop without hardware
 
@@ -144,7 +185,7 @@ conda env create -f ml/environment.yml && conda activate diagnostix
 python tools/mock_device.py            # http://localhost:8080 ; options: --risk high|low, --board-gain 1043, --no-finger
 ```
 
-The simulator serves the dashboard and speaks the same WebSocket protocol as the device ([docs/protocol.md](docs/protocol.md)). It replays a real lead-I ECG as ADC millivolts and scores each measurement with the same models and model-choice rule as the firmware.
+The simulator serves the dashboard and speaks the same WebSocket protocol as the device ([docs/protocol.md](docs/protocol.md)), including accounts and the captive-portal redirects. It replays a real lead-I ECG as ADC millivolts, analyses each window as it is recorded, and scores each measurement with the same models and model-choice rule as the firmware. Simulated accounts are kept in a temporary folder (`--data` to choose one).
 
 After editing `firmware/web/index.html`, run `python tools/embed_dashboard.py`.
 
@@ -161,17 +202,27 @@ The notebook covers:
 
 At the end it writes the C headers into `firmware/DiaGnostixECG/` and the golden vectors into `firmware/test/golden/`.
 
+Two further analyses use the same environment:
+
+```bash
+python tools/repeatability.py      # simulated test–retest of the risk tier (ml/outputs/tables/table23_repeatability.csv, fig16)
+make -C firmware/test test_smoothing && python tools/smoothing_figure.py   # smoother benchmark (table24, fig17)
+```
+
 ## Using the device
 
-1. Open `http://diagnostix.local` (or the IP shown on the serial console). Save the profile: age, sex, height, weight.
-2. **Calibrate the AD8232 gain once**, under *ECG gain calibration* on the dashboard, with a 1 mV sine reference ([docs/hardware.md](docs/hardware.md#ad8232-gain-calibration)). Until then the device uses a gain-invariant fallback model.
-3. Attach the electrodes: red on the right wrist, yellow on the left wrist, green on the right leg. Sit still and press **Start measurement** (33 s) or the BOOT button.
-4. Read the result:
+1. Join the Wi-Fi network **DiaGnostix** (password `diagnostix`). The sign-in page opens by itself; otherwise open `http://192.168.4.1/`.
+2. Create an account or sign in, then save the profile: age, sex, height, weight.
+3. **Calibrate the AD8232 gain once**, under *ECG gain calibration* on the dashboard, with a 1 mV sine reference ([docs/hardware.md](docs/hardware.md#ad8232-gain-calibration)). Until then the device uses a gain-invariant fallback model.
+4. Attach the electrodes: red on the right wrist, yellow on the left wrist, green on the right leg. Sit still and press **Start measurement** (33 s) or the BOOT button. The dashboard reports each 10-s window as it is analysed, and the result appears right after the recording.
+5. Read the result:
    - the risk tier and calibrated risk;
    - the advice;
    - the ECG analysis: windows used, heart rate, HRV, PR/QRS/QTc, R amplitude.
 
-   A **high** tier keeps the LED flashing until acknowledged and advises a fasting glucose or HbA1c test.
+   A **high** tier keeps the LED flashing until acknowledged and advises a fasting glucose or HbA1c test. A **borderline** result asks for a repeat measurement.
+
+The network has no internet. Keep using the page in the sign-in window, or let the phone stay connected without internet and open `http://192.168.4.1/`. While one person measures, other signed-in users see "In use by another user" and none of the live signals.
 
 ## Results
 
@@ -212,6 +263,32 @@ The full tables and figures are in [`ml/outputs/`](ml/outputs/); the key numbers
 | EMG/motion noise down to 5 dB SNR | AUROC ≥ 0.875; the quality check refuses noisier recordings |
 | 2× AD8232 gain error | primary specificity 76.4 % → 72.5 %; the gain-invariant fallback is unaffected (AUROC 0.876) |
 
+**Result latency.** The firmware analyses each window while the next one is recorded, so after the recording only the last window and a final step remain. Host timing of the firmware code:
+- one 10-s window: 89 µs;
+- final step: 5.5 µs;
+- remaining computation: 95 µs, against 274 µs (3 windows) or 549 µs (6 windows) when all windows are analysed at the end.
+
+The device prints its own per-window time at boot.
+
+**Output stability** (internal test set; two simulated measurements per person, each of three windows with independent noise):
+
+| Noise (in-band SNR) | Same tier: single window | Same tier: device (median + flag) | Flagged borderline | Tier changes flagged |
+|---|---|---|---|---|
+| 20 dB | 97.6 % | 98.3 % | 3.8 % | 93 % |
+| 10 dB | 94.7 % | 95.8 % | 9.1 % | 97 % |
+| 5 dB | 91.4 % | 94.9 % | 12.8 % | 87 % |
+
+The median of three windows reduces the within-person spread of the risk by 33–36 %.
+
+**Vital-sign smoother** (600-s simulated streams with noise, spikes and a step change; mean of 50 runs):
+
+| | Jitter (raw → shown) | 90 % step response |
+|---|---|---|
+| Heart rate | 8.5 → 0.75 bpm | 4.7 s |
+| SpO₂ | 3.0 → 0.21 % | 12.3 s |
+| Systolic BP | 8.4 → 0.73 mmHg | 10.9 s |
+| Skin temperature | 0.31 → 0.04 °C | 2.0 s |
+
 ## Limitations
 
 - **Simulated device signals.** The AD8232 front end, ADC, noise and gain errors were simulated on clinical ECGs. A paired study with the physical device and same-day FPG/HbA1c is needed before any clinical use.
@@ -220,13 +297,16 @@ The full tables and figures are in [`ml/outputs/`](ml/outputs/); the key numbers
   - The training data are Japanese check-up cohorts, with a composite endpoint: FPG ≥ 110 mg/dL, HbA1c ≥ 6.0 % or treatment.
   - Calibration must be updated locally for other populations or ADA criteria.
 - **Current status only.** The model detects current dysglycaemia; it does not predict future diabetes.
+- **Simulated stability tests.** The repeated measurements share the same 10-s beats with independent noise; real test–retest data from the device are still needed.
+- **Network security.** All users share one Wi-Fi password, and the traffic inside the network is not encrypted (no TLS). Accounts keep users apart; they do not protect against someone who knows the network password.
+- **Phone behaviour.** Some phones close the sign-in window or send other apps' traffic over mobile data on a network without internet. The dashboard stays reachable at `http://192.168.4.1/`.
 
 ## Documentation
 
 | Document | Content |
 |---|---|
 | [docs/hardware.md](docs/hardware.md) | bill of materials, wiring, lead-I electrode placement, AD8232 gain calibration, electrical safety |
-| [docs/protocol.md](docs/protocol.md) | WebSocket and Bluetooth LE messages and commands |
+| [docs/protocol.md](docs/protocol.md) | captive portal, accounts, WebSocket and Bluetooth LE messages and commands |
 | [docs/deployment.md](docs/deployment.md) | on-device inference, model export path (Keras `.h5` → TFLite / C), updating the models |
 | [ml/outputs/RESULTS_SUMMARY.md](ml/outputs/RESULTS_SUMMARY.md) | key validation results, regenerated by the notebook |
 
