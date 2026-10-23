@@ -54,6 +54,16 @@ a{color:var(--link)}
 .brand>div{min-width:0}
 h1{font-size:1.125rem;font-weight:700;letter-spacing:-.01em;line-height:1.2}
 .ver{font-size:.75rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-r{display:flex;align-items:center;gap:8px;flex:none}
+.who{display:flex;align-items:center;gap:6px}
+.who .chip{max-width:40vw;overflow:hidden;text-overflow:ellipsis}
+.btn.sm{min-height:36px;padding:0 12px;font-size:.875rem}
+@media (max-width:520px){
+  .who .chip{display:none}
+  .top-r .pill{padding:4px 9px}
+  .top-r .pill>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+}
+h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pill{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border:1px solid var(--border-2);border-radius:999px;font-size:.875rem;font-weight:600;white-space:nowrap;flex:none}
 
 /* status atoms */
@@ -94,6 +104,8 @@ h3{font-size:.9375rem;font-weight:650;margin:20px 0 8px}
     grid-template-areas:"signals measure" "vitals vitals" "result profile" "history calib"}
   #signals{grid-area:signals}#measure{grid-area:measure}#vitals{grid-area:vitals}
   #result{grid-area:result}#profile{grid-area:profile}#history{grid-area:history}#calib{grid-area:calib}
+  .layout{grid-template-areas:"signals measure" "vitals vitals" "result profile" "history calib" "account gaincal"}
+  #gaincal{grid-area:gaincal}#account{grid-area:account}
 }
 
 /* alert banner */
@@ -113,10 +125,12 @@ h3{font-size:.9375rem;font-weight:650;margin:20px 0 8px}
 .btn.primary{background:var(--btn);border-color:var(--btn);color:#fff}
 .btn.primary:enabled:hover{background:var(--btn-h);border-color:var(--btn-h)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.danger{color:var(--crit-ink);border-color:var(--crit)}
+.btn.danger:enabled:hover{background:var(--crit-wash)}
 .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .row .btn{flex:1 1 auto}
 @media (min-width:720px){.row .btn{flex:0 0 auto}}
-input[type=number],input[type=text]{width:100%;min-height:44px;padding:8px 12px;font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--border-2);border-radius:8px}
+input[type=number],input[type=text],input[type=password]{width:100%;min-height:44px;padding:8px 12px;font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--border-2);border-radius:8px}
 input[aria-invalid=true],.seg[aria-invalid=true]{border-color:var(--crit);box-shadow:0 0 0 1px var(--crit)}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field label,.flabel{font-size:.875rem;font-weight:600}
@@ -162,6 +176,22 @@ input[aria-invalid=true],.seg[aria-invalid=true]{border-color:var(--crit);box-sh
 .tile .chip{margin-top:6px;font-size:.75rem;padding:1px 8px;white-space:normal}
 .vnote{margin-top:10px}
 
+/* sign-in portal */
+.portal{max-width:440px;margin:0 auto;padding:20px 12px 8px}
+.portal-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.portal h2{font-size:1.25rem}
+.portal .hint{margin-top:6px}
+.portal .seg{display:flex;margin-top:16px}
+.portal .seg label{flex:1}
+#aform{display:grid;gap:12px;margin-top:16px}
+#aform .row{margin-top:0}
+#aform .row .btn{flex:1 1 auto}
+.check{display:flex;align-items:center;gap:8px;font-size:.9375rem;min-height:44px;cursor:pointer}
+.check input{width:20px;height:20px;margin:0;accent-color:var(--btn)}
+.hint.sm{font-size:.8125rem}
+.portal-note{margin-top:14px;font-size:.8125rem;color:var(--ink-2)}
+@media (min-width:720px){.portal{padding-top:48px}}
+
 /* measurement */
 .dur{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px}
 .why{margin-top:8px;font-size:.875rem;color:var(--ink-2)}
@@ -171,6 +201,9 @@ input[aria-invalid=true],.seg[aria-invalid=true]{border-color:var(--crit);box-sh
 .track{height:10px;border-radius:5px;background:var(--meter-track);overflow:hidden}
 .fill{height:100%;width:0;background:var(--meter);border-radius:0 5px 5px 0;transition:width .35s ease}
 .msg{margin-top:10px;font-size:.9375rem}
+.wins{list-style:none;padding:0;margin-top:12px;display:grid;gap:6px;font-size:.875rem}
+.wins li{display:flex;align-items:center;gap:8px}
+.wins .ic{width:16px;height:16px}
 #res-link{margin-top:12px}
 #res-link:hover{background:var(--surface-2)}
 
@@ -263,7 +296,10 @@ td .st .ic{width:16px;height:16px}
       <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M4 17h6l2-5 3 10 3-14 2 9h8"/></svg>
       <div><h1>DiaGnostix-ECG</h1><p class="ver" id="ver">Waiting for device…</p></div>
     </div>
-    <span class="pill st" id="conn" role="status"><span>Connecting…</span></span>
+    <div class="top-r">
+      <div class="who" id="who" hidden><span class="chip st" id="who-name"><span></span></span><button type="button" class="btn sm" id="signout">Sign out</button></div>
+      <span class="pill st" id="conn" role="status"><span>Connecting…</span></span>
+    </div>
   </div>
 </header>
 
@@ -279,9 +315,29 @@ td .st .ic{width:16px;height:16px}
   </div>
 </div>
 
+<section class="portal" id="portal" aria-labelledby="h-portal">
+  <div class="portal-card">
+    <h2 id="h-portal">Sign in</h2>
+    <p class="hint" id="portal-sub">Each person who uses this device has an account. Your profile, blood-pressure calibration and results are stored on the device under your account.</p>
+    <div class="seg" role="radiogroup" aria-label="Sign in or create an account">
+      <input type="radio" name="amode" id="am-in" value="login" checked><label for="am-in">Sign in</label>
+      <input type="radio" name="amode" id="am-up" value="register"><label for="am-up">Create account</label>
+    </div>
+    <form id="aform" novalidate>
+      <div class="field"><label for="a-user">Username</label><input id="a-user" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="24" aria-describedby="a-user-hint a-user-err"><p class="hint sm" id="a-user-hint" hidden>3–24 characters: lowercase letters, digits, dot, dash or underscore.</p><p class="err" id="a-user-err"></p></div>
+      <div class="field"><label for="a-pass">Password</label><input id="a-pass" type="password" autocomplete="current-password" maxlength="64" aria-describedby="a-pass-err"><p class="err" id="a-pass-err"></p></div>
+      <div class="field" id="a-pass2-f" hidden><label for="a-pass2">Repeat password</label><input id="a-pass2" type="password" autocomplete="new-password" maxlength="64" aria-describedby="a-pass2-err"><p class="err" id="a-pass2-err"></p></div>
+      <label class="check"><input type="checkbox" id="a-keep">Stay signed in on this phone</label>
+      <div class="row"><button type="submit" class="btn primary" id="a-go">Sign in</button></div>
+      <p class="st msg" id="a-msg" aria-live="polite" hidden><span></span></p>
+    </form>
+    <p class="portal-note">The device works without internet: this page is served by the device itself over its own Wi-Fi network.</p>
+  </div>
+</section>
+
 <div class="alert-wrap" id="alert-region" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-<main class="layout">
+<main class="layout" id="app" hidden>
   <section class="card" id="signals" aria-labelledby="h-signals">
     <div class="card-head"><h2 id="h-signals">Live signals</h2><span class="meta">5 s window · 1 s grid</span></div>
     <figure class="wave">
@@ -332,6 +388,7 @@ td .st .ic{width:16px;height:16px}
       <div class="prog-head"><span id="prog-title">Measurement progress</span><span class="num" id="prog-txt">Ready</span></div>
       <div class="track" id="prog" role="progressbar" aria-labelledby="prog-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="prog-fill"></div></div>
     </div>
+    <ol class="wins" id="wins" aria-label="ECG windows analysed so far" hidden></ol>
     <p class="st msg" id="sess-msg" aria-live="polite" hidden><span></span></p>
     <a href="#result" class="btn" id="res-link" hidden>View result</a>
   </section>
@@ -418,17 +475,28 @@ td .st .ic{width:16px;height:16px}
 
   <section class="card" id="history" aria-labelledby="h-history">
     <div class="card-head"><h2 id="h-history">History</h2><span class="meta" id="hist-count"></span></div>
-    <p class="hint" id="hist-note">Results are saved in this browser only.</p>
+    <p class="hint" id="hist-note">Results are stored on the device under your account.</p>
     <div class="tw" id="hist-wrap"><table>
       <caption class="sr-only">Saved results, newest first</caption>
       <thead><tr><th scope="col">Time</th><th scope="col" class="r">Risk</th><th scope="col">Tier</th><th scope="col" class="r">HR</th><th scope="col" class="r">BP</th><th scope="col" class="r">SpO₂</th></tr></thead>
       <tbody id="hist-body"></tbody>
     </table></div>
     <p class="empty" id="hist-empty">No saved results yet.</p>
-    <div class="row"><button type="button" class="btn" id="hist-csv">Export CSV</button><button type="button" class="btn" id="hist-clear">Clear history</button></div>
+    <div class="row"><button type="button" class="btn" id="hist-csv">Export CSV</button><button type="button" class="btn" id="hist-refresh">Refresh</button></div>
     <h3>Research beat log</h3>
     <p class="hint" id="beat-info"></p>
     <div class="row"><button type="button" class="btn" id="beat-csv">Export session beat log (CSV)</button></div>
+  </section>
+
+  <section class="card" id="account" aria-labelledby="h-account">
+    <div class="card-head"><h2 id="h-account">Account</h2><span class="meta" id="acct-name"></span></div>
+    <p class="cal-intro">Your profile, blood-pressure calibration and results are kept on this device under your account and are shown only after you sign in. The ECG gain calibration belongs to the device and is shared by all users.</p>
+    <form id="dform" novalidate>
+      <h3>Delete account</h3>
+      <p class="hint">Deletes your account, profile, calibration and all stored results from the device. This cannot be undone.</p>
+      <div class="field" style="margin-top:10px"><label for="d-pass">Password</label><input id="d-pass" type="password" autocomplete="current-password" maxlength="64" aria-describedby="d-pass-err"><p class="err" id="d-pass-err"></p></div>
+      <div class="row"><button type="submit" class="btn danger" id="d-go">Delete account and data</button></div>
+    </form>
   </section>
 </main>
 
@@ -444,9 +512,9 @@ td .st .ic{width:16px;height:16px}
 'use strict';
 const $ = (id) => document.getElementById(id);
 const SVGNS = 'http://www.w3.org/2000/svg';
-const KEY_HIST = 'diagnostix-ecg.history.v1';
 const KEY_DEV = 'diagnostix.device';
-const MAX_HIST = 500;
+const KEY_TOKEN = 'diagnostix.token';
+const HIST_LIMIT = 60;
 const MAX_BEATS = 20000;
 const LIFE = [
   ['smoking', 'Do you smoke?', [['yes', 'Yes'], ['no', 'No'], ['', 'Prefer not to say']]],
@@ -471,6 +539,20 @@ const store = {
   get(k, d) { try { const v = window.localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { window.localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { window.localStorage.removeItem(k); return true; } catch (e) { return false; } },
+};
+/* Sign-in token: tab-only (sessionStorage) unless the user ticks "Stay signed in" (localStorage). */
+const tokenStore = {
+  get() {
+    for (const [name, keep] of [['sessionStorage', false], ['localStorage', true]]) {
+      try { const t = window[name].getItem(KEY_TOKEN); if (t) return { t, keep }; } catch (e) { /* storage blocked */ }
+    }
+    return null;
+  },
+  set(t, keep) {
+    this.clear();
+    try { window[keep ? 'localStorage' : 'sessionStorage'].setItem(KEY_TOKEN, t); } catch (e) { /* kept in memory only */ }
+  },
+  clear() { for (const n of ['sessionStorage', 'localStorage']) { try { window[n].removeItem(KEY_TOKEN); } catch (e) { /* storage blocked */ } } },
 };
 
 /* helpers */
@@ -526,7 +608,8 @@ const S = {
   ws: null, host: null, fixedHost: false, conn: 'idle', retry: 0, timer: 0, nextAt: 0, lastMsg: 0,
   hello: null, profile: undefined, cal: null, session: { state: 'idle' }, alert: { active: false },
   vitals: null, vitalsAt: -1e9, waveAt: -1e9, ecgEmptyN: 0, ppgEmptyN: 0, clockOffset: null,
-  result: null, resultLive: false, history: [], histSaved: true,
+  result: null, resultLive: false, history: [], histLoaded: false, windows: [],
+  user: null, token: null, keep: false, authPending: false, authBusy: false, authMsg: '', authTimer: 0, amode: 'login',
   log: [], logging: false, logGrace: 0, logMode: 'measure',
   profDirty: false, awaitProfile: false, profTimer: 0,
 };
@@ -667,7 +750,8 @@ function connect() {
     if (S.ws !== ws) return;
     S.retry = 0; S.lastMsg = performance.now();
     setConn('open');
-    send({ cmd: 'hello' });
+    if (S.token) { S.authPending = true; send({ cmd: 'auth', token: S.token, now: Date.now() }); } else send({ cmd: 'hello' });
+    renderAuth();
   };
   ws.onmessage = (ev) => {
     if (S.ws !== ws) return;
@@ -676,7 +760,7 @@ function connect() {
     try { m = JSON.parse(ev.data); } catch (e) { return; }
     if (m && typeof m === 'object') { try { handle(m); } catch (e) { console.error(e); } }
   };
-  ws.onclose = () => { if (S.ws !== ws) return; S.ws = null; setConn('closed'); retryLater(); };
+  ws.onclose = () => { if (S.ws !== ws) return; S.ws = null; S.authPending = false; setConn('closed'); retryLater(); };
 }
 function dropSocket() {
   const ws = S.ws;
@@ -698,7 +782,7 @@ function send(obj) {
 }
 function setConn(state) {
   S.conn = state;
-  renderConn(); renderSignals(); updateControls();
+  renderConn(); renderSignals(); updateControls(); renderAuth();
 }
 function renderConn() {
   const st = S.conn, secs = Math.max(0, Math.ceil((S.nextAt - Date.now()) / 1000));
@@ -711,7 +795,7 @@ function renderConn() {
   $('devform').hidden = !showForm;
   $('reconnect').hidden = st !== 'closed';
   let msg = '';
-  if (st === 'nohost') msg = 'Enter the device address to connect (shown on the serial console, 192.168.4.1 in access-point mode, or diagnostix.local).';
+  if (st === 'nohost') msg = 'Enter the device address to connect (192.168.4.1 on the DiaGnostix Wi-Fi network, or the address shown on the serial console).';
   else if (st === 'closed') msg = `Connection to ${S.host} lost. ${S.timer ? `Retrying in ${secs} s.` : ''}`;
   else if (st === 'connecting' && S.retry > 0) msg = `Reconnecting to ${S.host}…`;
   $('connbar-msg').hidden = !msg;
@@ -735,6 +819,9 @@ function handle(m) {
     case 'alert': onAlert(m); break;
     case 'profile': onProfile(m); break;
     case 'error': onError(m); break;
+    case 'auth': onAuth(m); break;
+    case 'history': onHistory(m); break;
+    case 'window': onWindow(m); break;
     default: break; /* unknown types are ignored */
   }
 }
@@ -749,6 +836,11 @@ function onHello(m) {
   setText('ecg-cap', `${fmt(ecgC.fs, 0)} Hz · ${(m.stream && m.stream.ecg_unit) || 'mV at the ADC'}`);
   setText('ppg-cap', `${fmt(ppgC.fs, 0)} Hz · arbitrary units`);
   $('model-warn').hidden = md.self_test !== false;
+  const a = m.auth || {};
+  if (a.signed_in) { S.authPending = false; if (S.user !== a.username) { S.user = a.username; resetUserState(); } }
+  else if (!S.authPending && S.user) { S.user = null; resetUserState(); }
+  renderAuth();
+  if (!a.signed_in) { if (m.session) onSession(m.session); renderConn(); return; }
   if ('profile' in m) onProfile(m.profile);
   if (m.calibration) onCal(m.calibration);
   if (m.ecg_gain) onGain(m.ecg_gain);
@@ -875,48 +967,53 @@ function renderBeatInfo() {
 function onSession(m) {
   const prev = S.session || {}, cur = strip(m), acq = cur.state === 'acquiring';
   const restarted = isNum(cur.elapsed_s) && isNum(prev.elapsed_s) && cur.elapsed_s + 0.5 < prev.elapsed_s;
-  if (acq && (prev.state !== 'acquiring' || restarted || prev.mode !== cur.mode)) { S.log = []; S.logMode = cur.mode || 'measure'; }
-  if (acq) S.logging = true;
+  const fresh = acq && (prev.state !== 'acquiring' || restarted || prev.mode !== cur.mode);
+  if (fresh && cur.mine !== false) { S.log = []; S.logMode = cur.mode || 'measure'; S.windows = []; renderWindows(); }
+  if (acq && cur.mine !== false) S.logging = true;
   else if (S.logging) { S.logging = false; S.logGrace = performance.now() + 1500; }
   S.session = cur;
   renderSession(); renderBeatInfo();
 }
 function renderSession() {
-  const s = S.session || {}, st = s.state || 'idle', cal = s.mode === 'calibrate' || s.mode === 'gain';
+  const s = S.session || {}, foreign = s.mine === false, cal = s.mode === 'calibrate' || s.mode === 'gain';
+  /* someone else's session: only "busy" is shown, never their progress details or messages */
+  const st = foreign && s.state !== 'acquiring' ? 'idle' : s.state || 'idle', other = foreign && st === 'acquiring';
   const map = {
     acquiring: ['sync', 'info spin', s.mode === 'gain' ? 'Calibrating gain' : cal ? 'Calibrating' : 'Measuring'], complete: ['ok', 'ok', 'Complete'],
     failed: ['warn', 'warn', 'Failed'], idle: ['info', '', 'Idle'],
   };
-  const r = map[st] || map.idle;
+  const r = other ? ['info', 'info', 'In use by another user'] : map[st] || map.idle;
   setSt('sess-st', r[0], r[1], r[2]);
   let p = isNum(s.progress) ? s.progress : isNum(s.elapsed_s) && isNum(s.duration_s) && s.duration_s > 0 ? s.elapsed_s / s.duration_s : 0;
   if (st === 'complete') p = 1; else if (st === 'idle') p = 0;
   p = clamp(p, 0, 1);
   $('prog-fill').style.width = `${(p * 100).toFixed(1)}%`;
   const counts = `${plural(isNum(s.beats) ? s.beats : 0, 'beat')} · ${plural(isNum(s.pats) ? s.pats : 0, 'PAT')}`;
-  const line = st === 'acquiring' ? `${fmt(s.elapsed_s, 0)} of ${fmt(s.duration_s, 0)} s · ${counts}` : st === 'idle' ? 'Ready' : counts;
+  const line = other ? `${fmt(s.elapsed_s, 0)} of ${fmt(s.duration_s, 0)} s` : st === 'acquiring' ? `${fmt(s.elapsed_s, 0)} of ${fmt(s.duration_s, 0)} s · ${counts}` : st === 'idle' ? 'Ready' : counts;
   setText('prog-txt', line);
   const bar = $('prog');
   bar.setAttribute('aria-valuenow', String(Math.round(p * 100)));
   bar.setAttribute('aria-valuetext', st === 'acquiring' ? `${Math.round(p * 100)} percent, ${line}` : line);
-  setText('prog-title', cal ? 'Calibration progress' : 'Measurement progress');
+  setText('prog-title', other ? 'Device in use' : cal ? 'Calibration progress' : 'Measurement progress');
   const msg = $('sess-msg');
-  msg.hidden = !s.message;
-  if (s.message) setSt(msg, st === 'failed' ? 'warn' : st === 'complete' ? 'ok' : 'info', st === 'failed' ? 'warn' : st === 'complete' ? 'ok' : 'info', String(s.message));
+  msg.hidden = foreign || !s.message;
+  if (!msg.hidden) setSt(msg, st === 'failed' ? 'warn' : st === 'complete' ? 'ok' : 'info', st === 'failed' ? 'warn' : st === 'complete' ? 'ok' : 'info', String(s.message));
   $('res-link').hidden = !(st === 'complete' && !cal && S.result);
-  setText('start', st === 'acquiring' && !cal ? 'Measuring…' : 'Start measurement');
+  setText('start', st === 'acquiring' && !cal && !other ? 'Measuring…' : 'Start measurement');
   updateControls();
 }
 function updateControls() {
-  const on = S.conn === 'open', s = S.session || {}, acq = s.state === 'acquiring', prof = hasProfile(S.profile);
+  const on = S.conn === 'open' && !!S.user, s = S.session || {}, acq = s.state === 'acquiring', prof = hasProfile(S.profile);
+  const other = acq && s.mine === false;
   const gainCal = !!(S.gain && S.gain.calibrated), needs = (S.hello && S.hello.model && S.hello.model.needs) || [];
   const needFinger = needs.includes('sBP') || needs.includes('dBP');
   $('start').disabled = !on || acq || !(prof || gainCal);
-  $('cancel').disabled = !on || !acq;
+  $('cancel').disabled = !on || !acq || other;
   for (const r of document.querySelectorAll('input[name="dur"]')) r.disabled = acq;
   const why = $('start-why');
   let parts = [];
   if (!on) parts = ['Connect to the device to start a measurement.'];
+  else if (other) parts = ['Another user is measuring. You can start when their measurement has finished.'];
   else if (acq) parts = [s.mode === 'calibrate' ? 'Calibration in progress.' : 'Keep still until the measurement has finished.'];
   else if (S.profile === undefined) parts = ['Waiting for the profile stored on the device.'];
   else if (!prof && !gainCal) parts = ['Save your profile first: the risk model needs your age, gender, height and weight. ', h('a', { href: '#profile' }, 'Go to profile')];
@@ -933,6 +1030,8 @@ function updateControls() {
   $('g-set').disabled = !on || acq;
   $('g-clear').disabled = !on || acq || !gainCal;
   $('p-save').disabled = !on;
+  $('d-go').disabled = !on;
+  $('hist-refresh').disabled = !on;
   setText('p-hint', on ? 'Saved on the device and used for every measurement.' : 'Connect to the device to save your profile.');
   const ack = $('ack');
   if (ack && !ack.dataset.busy) ack.disabled = !on;
@@ -942,6 +1041,7 @@ function updateControls() {
 function onResult(m, live) {
   const r = strip(m);
   if (live) { r._wall = Date.now(); addHistory(r); }
+  if (live && Array.isArray(r.windows)) { S.windows = r.windows.map((w, i) => Object.assign({ index: i, of: r.windows.length }, w)); renderWindows(); }
   S.result = r;
   S.resultLive = live;
   renderResult();
@@ -958,6 +1058,7 @@ function resultPositive(r, thr) {
 }
 function resultWall(r) {
   if (r._wall) return r._wall;
+  if (isNum(r.t) && r.t > 1.6e9) return r.t * 1000;
   return isNum(r.t_ms) && S.clockOffset != null ? S.clockOffset + r.t_ms : null;
 }
 function kv(id, pairs) { $(id).replaceChildren(...pairs.map(([k, v]) => h('div', null, h('dt', null, k), h('dd', null, v)))); }
@@ -1030,41 +1131,45 @@ function renderResult() {
   const wall = resultWall(r);
   const bits = [];
   if (r.id != null) bits.push(`Result #${r.id}`);
-  bits.push(wall ? `${r._wall ? '' : 'about '}${fmtTime(wall)}` : isNum(r.t_ms) ? `device time ${(r.t_ms / 1000).toFixed(0)} s` : null);
+  bits.push(wall ? `${r._wall || isNum(r.t) ? '' : 'about '}${fmtTime(wall)}` : isNum(r.t_ms) ? `device time ${(r.t_ms / 1000).toFixed(0)} s` : null);
   if (isNum(thr)) bits.push(`high-risk threshold ${(thr * 100).toFixed(1)} %`);
   bits.push(`models ${r.model_version || '—'}`);
-  if (isNum(r.compute_ms)) bits.push(`analysis ${r.compute_ms} ms`);
+  if (isNum(r.latency_ms) && r.latency_ms > 0) bits.push(`result ${r.latency_ms} ms after the recording ended`);
+  if (isNum(r.compute_ms) && r.compute_ms > 0) bits.push(`analysis ${r.compute_ms} ms`);
   setText('res-meta', bits.filter(Boolean).join(' · '));
 }
 
-/* history */
-function loadHistory() {
-  const raw = store.get(KEY_HIST, []);
-  S.history = Array.isArray(raw) ? raw.filter((e) => e && typeof e === 'object' && isNum(e.risk) && isNum(e.wall)) : [];
+/* history: stored on the device per account, fetched after sign-in */
+function histEntry(r) {
+  const m = r.measurements || {}, e = r.ecg || {}, n = (x) => (isNum(x) ? x : null);
+  return {
+    id: r.id, t: isNum(r.t) ? r.t : null, tier: r.tier || null, model: r.model || null, risk: n(r.risk), score: n(r.score),
+    borderline: !!r.borderline, windows_ok: n(r.windows_ok), windows_total: n(r.windows_total),
+    hr: n(isNum(e.hr) ? e.hr : m.hr), qtc_ms: n(e.qtc_ms), rmssd_ms: n(e.rmssd_ms), sbp: n(m.sbp), dbp: n(m.dbp), spo2: n(m.spo2),
+    latency_ms: n(r.latency_ms),
+  };
 }
 function addHistory(r) {
-  const key = `${r.id}|${r.t_ms}|${r.risk}`;
-  if (!isNum(r.risk) || S.history.some((e) => e.key === key)) return;
-  const m = r.measurements || {}, thr = resultThreshold(r), n = (x) => (isNum(x) ? x : null);
-  S.history.push({
-    key, wall: r._wall, id: r.id == null ? null : r.id, t_ms: n(r.t_ms), risk: r.risk, positive: resultPositive(r, thr), threshold: n(thr),
-    tier: r.tier || null, model: r.model || null,
-    hr: n(m.hr), sbp: n(m.sbp), dbp: n(m.dbp), bp_calibrated: typeof m.bp_calibrated === 'boolean' ? m.bp_calibrated : null,
-    pat_ms: n(m.pat_ms), spo2: n(m.spo2), body_temp: n(m.body_temp), model_version: r.model_version || null,
-    warnings: Array.isArray(r.warnings) ? r.warnings.join('; ') : '',
-  });
-  if (S.history.length > MAX_HIST) S.history.splice(0, S.history.length - MAX_HIST);
-  S.histSaved = store.set(KEY_HIST, S.history);
+  if (!isNum(r.risk) || r.tier === 'no_result' || S.history.some((e) => e.id === r.id)) return;
+  S.history.push(histEntry(r));
   renderHistory();
 }
+function onHistory(m) {
+  const list = Array.isArray(m.results) ? m.results.filter((e) => e && typeof e === 'object' && isNum(e.risk)) : [];
+  S.history = list;
+  S.histLoaded = true;
+  renderHistory();
+}
+function requestHistory() { if (S.user && S.conn === 'open') send({ cmd: 'history', limit: HIST_LIMIT }); }
 function renderHistory() {
-  const list = S.history.slice().reverse(), shown = list.slice(0, 50);
+  const list = S.history.slice().sort((a, b) => (b.id || 0) - (a.id || 0)), shown = list.slice(0, 50);
   $('hist-body').replaceChildren(...shown.map((e) => {
-    const d = new Date(e.wall);
+    const d = isNum(e.t) && e.t > 1.6e9 ? new Date(e.t * 1000) : null;
+    const tr = e.tier || 'low', t = TIERS[tr] || TIERS.low;
     return h('tr', null,
-      h('td', { class: 't' }, h('small', null, dayFmt ? dayFmt.format(d) : d.toLocaleDateString()), hmFmt ? hmFmt.format(d) : d.toLocaleTimeString()),
+      h('td', { class: 't' }, d ? [h('small', null, dayFmt ? dayFmt.format(d) : d.toLocaleDateString()), hmFmt ? hmFmt.format(d) : d.toLocaleTimeString()] : `#${e.id}`),
       h('td', { class: 'r' }, `${Math.round(e.risk * 100)} %`),
-      h('td', { class: 'v' }, (() => { const tr = e.tier || (e.positive ? 'high' : 'low'), t = TIERS[tr] || TIERS.low; return h('span', { class: 'st' }, icon(t[0], t[1]), h('span', null, TIER_SHORT[tr] || tr)); })()),
+      h('td', { class: 'v' }, h('span', { class: 'st' }, icon(t[0], t[1]), h('span', null, `${TIER_SHORT[tr] || tr}${e.borderline ? ' (borderline)' : ''}`))),
       h('td', { class: 'r' }, fmt(e.hr, 0)),
       h('td', { class: 'r' }, isNum(e.sbp) && isNum(e.dbp) ? `${e.sbp.toFixed(0)}/${e.dbp.toFixed(0)}` : '—'),
       h('td', { class: 'r' }, fmt(e.spo2, 0)));
@@ -1072,10 +1177,9 @@ function renderHistory() {
   const n = list.length;
   $('hist-empty').hidden = n > 0;
   $('hist-wrap').hidden = n === 0;
+  setText('hist-empty', S.histLoaded || n ? 'No saved results yet.' : 'Loading results from the device…');
   setText('hist-count', n ? `${plural(n, 'result')}${n > shown.length ? `, latest ${shown.length} shown` : ''}` : '');
   $('hist-csv').disabled = n === 0;
-  $('hist-clear').disabled = n === 0;
-  setText('hist-note', S.histSaved ? 'Results are saved in this browser only.' : 'This browser blocks local storage, so history is kept only until the page is closed.');
 }
 function csvCell(v) {
   if (v == null) return '';
@@ -1099,13 +1203,13 @@ function download(name, text) {
   } catch (e) { toast('Could not create the download.'); }
 }
 function exportHistory() {
-  const rows = [['time_iso', 'result_id', 'device_t_ms', 'risk', 'risk_percent', 'tier', 'model', 'positive', 'threshold', 'hr_bpm', 'sbp_mmhg', 'dbp_mmhg',
-    'bp_calibrated', 'pat_ms', 'spo2_pct', 'body_temp_c', 'model_version', 'warnings']];
-  for (const e of S.history) {
-    rows.push([new Date(e.wall).toISOString(), e.id, e.t_ms, e.risk, Math.round(e.risk * 1000) / 10, e.tier, e.model, e.positive, e.threshold, e.hr, e.sbp, e.dbp,
-      e.bp_calibrated, e.pat_ms, e.spo2, e.body_temp, e.model_version, e.warnings]);
+  const rows = [['time_iso', 'result_id', 'risk', 'risk_percent', 'tier', 'borderline', 'model', 'score', 'windows_ok', 'windows_total', 'hr_bpm',
+    'qtc_ms', 'rmssd_ms', 'sbp_mmhg', 'dbp_mmhg', 'spo2_pct', 'latency_ms']];
+  for (const e of S.history.slice().sort((a, b) => (a.id || 0) - (b.id || 0))) {
+    rows.push([isNum(e.t) && e.t > 1.6e9 ? new Date(e.t * 1000).toISOString() : '', e.id, e.risk, Math.round(e.risk * 1000) / 10, e.tier, e.borderline, e.model,
+      e.score, e.windows_ok, e.windows_total, e.hr, e.qtc_ms, e.rmssd_ms, e.sbp, e.dbp, e.spo2, e.latency_ms]);
   }
-  download(`diagnostix-history-${stamp()}.csv`, toCsv(rows));
+  download(`diagnostix-${S.user || 'history'}-${stamp()}.csv`, toCsv(rows));
 }
 function exportBeats() {
   const rows = [['t_ms', 'rr_ms', 'pat_ms', 'sbp', 'dbp']];
@@ -1266,6 +1370,120 @@ function setGain() {
   send({ cmd: 'set_gain', gain: g });
 }
 
+/* live analysis of the 10-s ECG windows (sent while the recording continues) */
+const WIN_ST = { ok: ['ok', 'ok', 'passed'], low_quality: ['warn', 'warn', 'low signal quality'], leads_off: ['off', 'crit', 'leads off'], error: ['warn', 'warn', 'not analysed'] };
+function onWindow(m) {
+  if (!isNum(m.index)) return;
+  S.windows[m.index] = strip(m);
+  renderWindows();
+}
+function renderWindows() {
+  const ws = S.windows.filter(Boolean), box = $('wins');
+  box.hidden = !ws.length;
+  box.replaceChildren(...ws.map((w) => {
+    const st = WIN_ST[w.status] || WIN_ST.error, of = isNum(w.of) ? w.of : ws.length;
+    const detail = w.status === 'ok' || isNum(w.beats) ? ` · ${plural(isNum(w.beats) ? w.beats : 0, 'beat')}${isNum(w.hr) ? ` · ${w.hr.toFixed(0)} bpm` : ''}` : '';
+    return h('li', null, icon(st[0], st[1]), h('span', null, `Window ${w.index + 1} of ${of}: ${st[2]}${detail}`));
+  }));
+}
+
+/* accounts */
+const USER_RE = /^[a-z0-9._-]{3,24}$/;
+function resetUserState() {
+  S.profile = undefined; S.cal = null; S.result = null; S.resultLive = false;
+  S.history = []; S.histLoaded = false; S.log = []; S.logging = false; S.windows = [];
+  S.awaitProfile = false; clearTimeout(S.profTimer);
+  fillProfile(null);
+  onAlert({ active: false });
+  renderResult(); renderHistory(); renderCal(); renderProfStatus(); renderBmiTile(); renderBeatInfo(); renderWindows(); renderSession();
+}
+function setAuthMode(mode) {
+  S.amode = mode === 'register' ? 'register' : 'login';
+  setRadio('amode', S.amode);
+  const reg = S.amode === 'register';
+  $('a-pass2-f').hidden = !reg;
+  $('a-user-hint').hidden = !reg;
+  $('a-pass').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
+  for (const id of ['a-user', 'a-pass', 'a-pass2']) showErr(id, '');
+  S.authMsg = '';
+  renderAuth();
+}
+function renderAuth() {
+  const inn = !!S.user, open = S.conn === 'open';
+  $('portal').hidden = inn;
+  $('app').hidden = !inn;
+  $('alert-region').hidden = !inn;
+  $('who').hidden = !inn;
+  if (inn) { setSt('who-name', 'ok', 'ok', S.user); setText('acct-name', `Signed in as ${S.user}`); }
+  const reg = S.amode === 'register';
+  setText('h-portal', reg ? 'Create an account' : 'Sign in');
+  setText('a-go', S.authBusy ? (reg ? 'Creating account…' : 'Signing in…') : reg ? 'Create account' : 'Sign in');
+  $('a-go').disabled = !open || S.authBusy || S.authPending;
+  const users = S.hello && S.hello.auth && isNum(S.hello.auth.users) ? S.hello.auth.users : null;
+  let msg = null;
+  if (!open) msg = ['sync', 'info spin', S.conn === 'nohost' ? 'Enter the device address above.' : 'Connecting to the device…'];
+  else if (S.authPending) msg = ['sync', 'info spin', 'Signing in…'];
+  else if (S.authMsg) msg = /signed out|deleted/i.test(S.authMsg) ? ['info', 'info', S.authMsg] : ['warn', 'warn', S.authMsg];
+  else if (users === 0 && !reg) msg = ['info', 'info', 'No accounts on this device yet: choose Create account.'];
+  const el = $('a-msg');
+  el.hidden = !msg;
+  if (msg) setSt(el, msg[0], msg[1], msg[2]);
+  updateControls();
+}
+function onAuth(m) {
+  clearTimeout(S.authTimer);
+  S.authPending = false; S.authBusy = false;
+  if (m.ok) {
+    if (m.token) { S.token = m.token; tokenStore.set(m.token, S.keep); }
+    if (S.user !== m.username) { S.user = m.username || null; resetUserState(); }
+    S.authMsg = '';
+    $('a-pass').value = ''; $('a-pass2').value = '';
+    requestHistory();
+  } else {
+    S.token = null; tokenStore.clear();
+    if (S.user) { S.user = null; resetUserState(); }
+    S.authMsg = m.message ? String(m.message) : 'Sign-in failed';
+  }
+  renderAuth();
+}
+function submitAuth(ev) {
+  ev.preventDefault();
+  const reg = S.amode === 'register';
+  const user = $('a-user').value.trim().toLowerCase(), pw = $('a-pass').value, pw2 = $('a-pass2').value;
+  const errs = [
+    ['a-user', !user ? 'Enter your username.' : reg && !USER_RE.test(user) ? 'Use 3–24 lowercase letters, digits, dot, dash or underscore.' : ''],
+    ['a-pass', !pw ? 'Enter your password.' : reg && pw.length < 6 ? 'Use at least 6 characters.' : ''],
+    ['a-pass2', reg && pw2 !== pw ? 'The passwords do not match.' : ''],
+  ];
+  let first = null;
+  for (const [id, msg] of errs) { showErr(id, msg); if (msg && !first) first = id; }
+  if (first) { $(first).focus(); return; }
+  S.keep = $('a-keep').checked;
+  S.authMsg = '';
+  if (!send({ cmd: reg ? 'register' : 'login', username: user, password: pw, now: Date.now() })) return;
+  S.authBusy = true;
+  clearTimeout(S.authTimer);
+  S.authTimer = setTimeout(() => { if (S.authBusy) { S.authBusy = false; S.authMsg = 'No answer from the device; try again.'; renderAuth(); } }, 8000);
+  renderAuth();
+}
+function signOut() {
+  if (S.conn === 'open') send({ cmd: 'logout' });
+  S.token = null; tokenStore.clear();
+  S.user = null; S.authMsg = 'Signed out';
+  resetUserState();
+  setAuthMode('login');
+  S.authMsg = 'Signed out';
+  renderAuth();
+}
+function submitDelete(ev) {
+  ev.preventDefault();
+  const pw = $('d-pass').value;
+  showErr('d-pass', pw ? '' : 'Enter your password to confirm.');
+  if (!pw) { $('d-pass').focus(); return; }
+  if (!window.confirm(`Delete the account "${S.user}" and all of its results from the device? This cannot be undone.`)) return;
+  if (send({ cmd: 'delete_account', password: pw })) $('d-pass').value = '';
+}
+
 /* alert */
 function onAlert(m) {
   const a = strip(m);
@@ -1307,7 +1525,8 @@ function toast(msg) {
 /* wiring */
 function init() {
   buildQuestions();
-  loadHistory();
+  const saved = tokenStore.get();
+  if (saved) { S.token = saved.t; S.keep = saved.keep; $('a-keep').checked = saved.keep; }
   const r = resolveHost();
   S.host = r.host;
   S.fixedHost = r.fixed;
@@ -1338,12 +1557,11 @@ function init() {
     if (window.confirm('Forget the gain calibration? The device will use the gain-invariant fallback model.')) send({ cmd: 'clear_gain' });
   });
   $('hist-csv').addEventListener('click', exportHistory);
-  $('hist-clear').addEventListener('click', () => {
-    if (!window.confirm('Delete all saved results from this browser?')) return;
-    S.history = [];
-    store.del(KEY_HIST);
-    renderHistory();
-  });
+  $('hist-refresh').addEventListener('click', requestHistory);
+  $('aform').addEventListener('submit', submitAuth);
+  for (const el of document.querySelectorAll('input[name="amode"]')) el.addEventListener('change', () => setAuthMode(el.value));
+  $('signout').addEventListener('click', signOut);
+  $('dform').addEventListener('submit', submitDelete);
   $('beat-csv').addEventListener('click', exportBeats);
 
   readTheme();
@@ -1367,7 +1585,8 @@ function init() {
   }, 1000);
 
   renderConn(); renderVitals(); renderBmiTile(); renderSignals(); renderSession(); renderResult();
-  renderCal(); renderGain(); renderLifestyle(); renderProfStatus(); renderFormBmi(); renderHistory(); renderBeatInfo(); updateControls();
+  renderCal(); renderGain(); renderLifestyle(); renderProfStatus(); renderFormBmi(); renderHistory(); renderBeatInfo(); renderWindows(); updateControls();
+  setAuthMode('login');
   connect();
   startLoop();
 }
