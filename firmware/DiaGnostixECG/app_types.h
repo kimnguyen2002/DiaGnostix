@@ -71,6 +71,8 @@ struct SessionSummary {
 struct RiskResult {
   uint32_t id = 0;
   uint32_t t_ms = 0;
+  int64_t t_epoch = 0;       // wall-clock seconds (set from the signed-in browser), 0 if unknown
+  int user = -1;             // owner of the measurement (user_store.h id)
   dgx::RiskEstimate est;     // ~2 KB: held in a static instance, never on the stack
   dgx::NonEcgInputs inputs;  // the non-ECG values the model received
   SessionSummary summary;
@@ -88,3 +90,14 @@ struct AlertState {
   char message[160] = "";
   bool active() const { return kind != AlertKind::kNone; }
 };
+
+// One connected dashboard (WebSocket client id) or the BLE link, and who is signed in on it.
+struct ClientSlot {
+  bool used = false;
+  uint32_t id = 0;
+  int user = -1;               // user_store.h id, -1 = not signed in
+  char token[33] = "";
+  uint8_t failures = 0;        // failed sign-ins (simple brute-force brake)
+  uint32_t blocked_until_ms = 0;
+};
+static constexpr uint32_t kBleClientId = 0xFFFFFFFFu;

@@ -313,6 +313,57 @@ void test_boot_selftest_vector() {
   TEST_ASSERT_FLOAT_WITHIN(1e-7, DGX_SELFTEST_ECG_SCORE, m.score(in));
 }
 
+
+// Low-latency pipeline: analysing each window as soon as it is captured, then finalising, gives exactly
+// the same estimate as analysing the complete capture at the end.
+void test_incremental_equals_batch() {
+  const Golden& g = golden();
+  const size_t r = firstRecord(true);
+  std::vector<int16_t> buf(3 * kWindowSamples);
+  for (int w = 0; w < 3; ++w) std::copy(g.mv[r].begin(), g.mv[r].end(), buf.begin() + w * kWindowSamples);
+  buf[kWindowSamples + 10] = kLeadOffSample;  // make the windows differ
+  EcgRiskEngine engine;
+  TEST_ASSERT_TRUE(engine.begin());
+  static RiskEstimate batch, inc;
+  engine.evaluate(buf.data(), 3, ECG_GAIN, ECG_REF_MV, false, ECG_CLIP_MV, ModelRole::kEcgOnly, NonEcgInputs(), 2, batch);
+  inc = RiskEstimate();
+  inc.n_windows = 3;
+  for (int w = 0; w < 3; ++w)  // as the windows complete during the recording
+    engine.analyzeWindow(buf.data() + (size_t)w * kWindowSamples, ECG_GAIN, ECG_REF_MV, false, ECG_CLIP_MV, inc.window[w]);
+  EcgRiskEngine::finalize(ModelRole::kEcgOnly, NonEcgInputs(), 2, inc);
+  TEST_ASSERT_EQUAL_INT(batch.n_good, inc.n_good);
+  TEST_ASSERT_TRUE(batch.tier == inc.tier);
+  TEST_ASSERT_TRUE(batch.score == inc.score);
+  TEST_ASSERT_TRUE(batch.window[1].status == WindowStatus::kLeadsOff && inc.window[1].status == WindowStatus::kLeadsOff);
+}
+
+// Output stability: windows that fall on both sides of a tier boundary are flagged as borderline.
+void test_borderline_flag() {
+  const Golden& g = golden();
+  const ModelSpec& m = modelSpec(ModelRole::kEcgOnly);
+  const int c = g.scores.col("ecg_only"), q = g.features.col("sqi_ok");
+  int lo = -1, hi = -1;
+  for (size_t r = 0; r < g.mv.size(); ++r) {
+    if (g.features.rows[r][q] == 0) continue;
+    const double sc = g.scores.rows[r][c];
+    if (sc < m.elevatedThreshold() && lo < 0) lo = (int)r;
+    if (sc >= m.highThreshold() && hi < 0) hi = (int)r;
+  }
+  if (lo < 0 || hi < 0) testfw::fail(__LINE__, "golden set lacks a low and a high ECG-only record");
+  std::vector<int16_t> buf(3 * kWindowSamples);
+  const int mix[3] = {lo, hi, hi}, same[3] = {hi, hi, hi};
+  EcgRiskEngine engine;
+  TEST_ASSERT_TRUE(engine.begin());
+  static RiskEstimate est;
+  for (int w = 0; w < 3; ++w) std::copy(g.mv[mix[w]].begin(), g.mv[mix[w]].end(), buf.begin() + w * kWindowSamples);
+  engine.evaluate(buf.data(), 3, ECG_GAIN, ECG_REF_MV, false, ECG_CLIP_MV, ModelRole::kEcgOnly, NonEcgInputs(), 2, est);
+  TEST_ASSERT_TRUE(est.borderline);
+  TEST_ASSERT_TRUE(est.tier == RiskTier::kHigh);  // median of (low, high, high)
+  for (int w = 0; w < 3; ++w) std::copy(g.mv[same[w]].begin(), g.mv[same[w]].end(), buf.begin() + w * kWindowSamples);
+  engine.evaluate(buf.data(), 3, ECG_GAIN, ECG_REF_MV, false, ECG_CLIP_MV, ModelRole::kEcgOnly, NonEcgInputs(), 2, est);
+  TEST_ASSERT_FALSE(est.borderline);
+}
+
 int main(int argc, char** argv) {
   if (argc > 1) g_dir = argv[1];
   std::printf("golden vectors: %s | model %s (%s), primary inputs: %s\n", g_dir.c_str(), DGX_MODEL_VERSION,
@@ -327,5 +378,7 @@ int main(int argc, char** argv) {
   RUN_TEST(test_all_model_inputs_known);
   RUN_TEST(test_gain_from_sine);
   RUN_TEST(test_boot_selftest_vector);
+  RUN_TEST(test_incremental_equals_batch);
+  RUN_TEST(test_borderline_flag);
   return UNITY_END();
 }

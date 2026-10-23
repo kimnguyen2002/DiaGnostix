@@ -4,7 +4,13 @@
 //   lead-off check -> mV to uV at the electrodes -> 32 features + SQI (ecg_features.h)
 //   -> model score (risk_model.h).
 // The session score is the median score of the SQI-passing windows; at least ECG_MIN_GOOD_WINDOWS are
-// required, otherwise there is no result. No Arduino dependency (host-tested in firmware/test).
+// required, otherwise there is no result.
+//
+// Two stages keep the result latency low: analyzeWindow() (filtering, delineation, features: the
+// expensive part) runs on each window as soon as it has been captured, while the next window is still
+// being recorded; finalize() (model scores, median, tier: microseconds) runs when the session ends.
+// After the last sample only the last window remains to be analysed.
+// No Arduino dependency (host-tested in firmware/test).
 #pragma once
 
 #include <math.h>
@@ -47,7 +53,11 @@ struct RiskEstimate {
   int n_good = 0;
   WindowResult window[kMaxWindows];
   double summary[kNumFeatures];  // per-feature median over the good windows (display / app)
-  uint32_t compute_us = 0;       // filled by the caller
+  double score_min = NAN;        // spread of the good-window scores
+  double score_max = NAN;
+  bool borderline = false;       // the good windows fall on both sides of a tier boundary
+  uint32_t compute_us = 0;       // analysis time after the last sample (filled by the caller)
+  uint32_t latency_ms = 0;       // last sample captured -> result published (filled by the caller)
 };
 
 class EcgRiskEngine {
@@ -56,51 +66,51 @@ class EcgRiskEngine {
   bool ready() const { return fx_.ready(); }
   static constexpr size_t workBytes() { return EcgFeatureExtractor::kWorkBytes; }
 
-  // mv: n_windows * kWindowSamples samples of analogReadMilliVolts() (kLeadOffSample = leads off).
-  // uV at the electrodes = sign * (mV - ref_mv) * 1000 / gain, as in the training simulation.
-  // The estimate (~2 KB) is filled in place to keep it off the loop-task stack.
-  void evaluate(const int16_t* mv, int n_windows, double gain, double ref_mv, bool invert, int clip_mv,
-                ModelRole role, const NonEcgInputs& inputs, int min_good, RiskEstimate& est) {
-    est = RiskEstimate();
-    est.role = role;
-    est.n_windows = std::min(n_windows, kMaxWindows);
-    for (int k = 0; k < kNumFeatures; ++k) est.summary[k] = NAN;
-    if (role == ModelRole::kNone || !fx_.ready()) return;
-    const ModelSpec& m = modelSpec(role);
+  // Stage 1: one 10-s window of analogReadMilliVolts() samples (kLeadOffSample = leads off) -> features,
+  // SQI and status. uV at the electrodes = sign * (mV - ref_mv) * 1000 / gain, as in the training simulation.
+  // Uses the extractor's work buffers: call from one task only.
+  void analyzeWindow(const int16_t* s, double gain, double ref_mv, bool invert, int clip_mv, WindowResult& wr) {
+    wr = WindowResult();
+    if (!fx_.ready()) return;
     const double sign = invert ? -1.0 : 1.0;
+    double* x = fx_.input();
+    for (int i = 0; i < kWindowSamples; ++i) {
+      if (s[i] == kLeadOffSample) {
+        wr.status = WindowStatus::kLeadsOff;
+        return;
+      }
+      if (s[i] >= clip_mv || s[i] <= 0) ++wr.clipped_samples;
+      x[i] = sign * (((double)s[i] - ref_mv) * 1000.0 / gain);
+    }
+    if (!fx_.compute(wr.features)) {
+      wr.status = WindowStatus::kError;
+      return;
+    }
+    wr.status = wr.features.sqi_ok ? WindowStatus::kOk : WindowStatus::kLowQuality;
+  }
+
+  // Stage 2: scores the analysed windows est.window[0..est.n_windows) with the chosen model, takes the
+  // median of the SQI-passing windows, calibrates it and assigns the tier. Cheap (microseconds).
+  static void finalize(ModelRole role, const NonEcgInputs& inputs, int min_good, RiskEstimate& est) {
+    est.role = role;
+    est.n_good = 0;
+    est.tier = RiskTier::kNoResult;
+    est.score = est.risk = est.score_min = est.score_max = NAN;
+    est.borderline = false;
+    for (int k = 0; k < kNumFeatures; ++k) est.summary[k] = NAN;
+    if (role == ModelRole::kNone) return;
+    const ModelSpec& m = modelSpec(role);
     double good_scores[kMaxWindows];
     for (int w = 0; w < est.n_windows; ++w) {
       WindowResult& wr = est.window[w];
-      const int16_t* s = mv + (size_t)w * kWindowSamples;
-      double* x = fx_.input();
-      bool leads_off = false;
-      for (int i = 0; i < kWindowSamples; ++i) {
-        if (s[i] == kLeadOffSample) {
-          leads_off = true;
-          break;
-        }
-        if (s[i] >= clip_mv || s[i] <= 0) ++wr.clipped_samples;
-        x[i] = sign * (((double)s[i] - ref_mv) * 1000.0 / gain);
-      }
-      if (leads_off) {
-        wr.status = WindowStatus::kLeadsOff;
-        continue;
-      }
-      if (!fx_.compute(wr.features)) {
-        wr.status = WindowStatus::kError;
-        continue;
-      }
-      if (!wr.features.sqi_ok) {
-        wr.status = WindowStatus::kLowQuality;
-        continue;
-      }
+      wr.score = NAN;
+      if (wr.status != WindowStatus::kOk) continue;
       float in[kMaxModelInputs];
       if (!fillInputs(m, wr.features, inputs, in)) {
         wr.status = WindowStatus::kError;
         continue;
       }
       wr.score = m.score(in);
-      wr.status = WindowStatus::kOk;
       good_scores[est.n_good++] = wr.score;
     }
     if (est.n_good < min_good) return;  // tier stays kNoResult
@@ -108,6 +118,10 @@ class EcgRiskEngine {
     est.score = np_median(good_scores, est.n_good, scratch);
     est.risk = m.calibrate(est.score);
     est.tier = m.tier(est.score);
+    est.score_min = *std::min_element(good_scores, good_scores + est.n_good);
+    est.score_max = *std::max_element(good_scores, good_scores + est.n_good);
+    for (double t : {m.elevatedThreshold(), m.highThreshold()})
+      if (est.score_min < t && t <= est.score_max) est.borderline = true;
     for (int k = 0; k < kNumFeatures; ++k) {
       double v[kMaxWindows];
       int n = 0;
@@ -117,6 +131,17 @@ class EcgRiskEngine {
       }
       if (n) est.summary[k] = np_median(v, n, scratch);
     }
+  }
+
+  // Both stages on a complete capture of n_windows windows (self-test, host tests).
+  // The estimate (~2 KB) is filled in place to keep it off the loop-task stack.
+  void evaluate(const int16_t* mv, int n_windows, double gain, double ref_mv, bool invert, int clip_mv,
+                ModelRole role, const NonEcgInputs& inputs, int min_good, RiskEstimate& est) {
+    est = RiskEstimate();
+    est.n_windows = std::min(n_windows, kMaxWindows);
+    for (int w = 0; w < est.n_windows; ++w)
+      analyzeWindow(mv + (size_t)w * kWindowSamples, gain, ref_mv, invert, clip_mv, est.window[w]);
+    finalize(role, inputs, min_good, est);
   }
 
   // Gain calibration: n samples of a sine of known peak-to-peak amplitude (ref_mvpp at the electrodes).
