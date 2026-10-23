@@ -5,6 +5,7 @@
 #
 # test_dsp : streaming QRS, PPG, pulse arrival time, BP, thermistor (from DiaGnostix)
 # test_smoothing : vital-sign smoother (jitter, outliers, step response); --csv writes the streams
+# bench    : host timing of the two analysis stages (make bench)
 # test_ecg : ECG feature extractor and the generated risk models vs the Python golden vectors
 #            written by ml/notebooks/01_ecg_prediabetes_training_and_export.ipynb (Section 15)
 
@@ -18,7 +19,7 @@ DSP_HEADERS := $(addprefix $(SKETCH)/,biquad.h stats.h qrs_detector.h ppg_proces
 ECG_HEADERS := $(addprefix $(SKETCH)/,ecg_features.h risk_model.h ecg_risk.h) \
                $(addprefix $(MODELS)/,dgx_models.h dgx_dsp_spec.h dgx_selftest_vector.h)
 
-.PHONY: test clean
+.PHONY: test bench clean
 
 test: test_dsp test_smoothing test_ecg
 	./test_dsp
@@ -34,5 +35,12 @@ test_smoothing: test_smoothing.cpp test_framework.h $(SKETCH)/smoothing.h
 test_ecg: test_ecg.cpp test_framework.h $(ECG_HEADERS)
 	$(CXX) $(CXXFLAGS) -I$(SKETCH) -I$(MODELS) test_ecg.cpp -o $@
 
+# Host timing of the per-window analysis and of the final step (result-latency analysis, not a test)
+bench: bench_latency
+	./bench_latency
+
+bench_latency: bench_latency.cpp $(ECG_HEADERS)
+	$(CXX) $(CXXFLAGS) -I$(SKETCH) -I$(MODELS) bench_latency.cpp -o $@
+
 clean:
-	rm -f test_dsp test_smoothing test_ecg
+	rm -f test_dsp test_smoothing test_ecg bench_latency
