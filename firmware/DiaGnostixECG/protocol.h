@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include <ArduinoJson.h>
+#include <cctype>
 #include <cstdio>
 #include <cstring>
 
@@ -26,6 +27,12 @@ enum class CommandType : uint8_t {
   kCalibrateGain,
   kSetGain,
   kClearGain,
+  kRegister,
+  kLogin,
+  kAuth,
+  kLogout,
+  kDeleteAccount,
+  kHistory,
 };
 
 struct Command {
@@ -37,6 +44,11 @@ struct Command {
   float dbp = NAN;
   float ref_mvpp = NAN;     // kCalibrateGain: peak-to-peak amplitude of the reference sine at the electrodes
   float gain = NAN;         // kSetGain
+  char username[25] = "";   // kRegister, kLogin
+  char password[65] = "";   // kRegister, kLogin, kDeleteAccount
+  char token[33] = "";      // kAuth
+  double now_ms = NAN;      // kRegister, kLogin, kAuth: the browser's clock (sets the device time)
+  int limit = 0;            // kHistory
   char error[96] = "";      // set when type == kInvalid
 };
 
@@ -56,6 +68,9 @@ struct SessionView {
 };
 
 struct HelloInfo {
+  const char* username;        // nullptr if the client is not signed in
+  int user_count;
+  bool session_mine;           // the running/last session belongs to this client's user
   const UserProfile* profile;  // nullptr if none
   const dsp::BpCalibration* calibration;
   const EcgGain* gain;
@@ -66,9 +81,13 @@ struct HelloInfo {
 };
 
 String hello(const HelloInfo& info);
+String auth(bool ok, const char* username, const char* token, const char* message);
+String history(const String& results_json_array);
+String windowProgress(int index, int of, const dgx::WindowResult& w);
+String resultLine(const RiskResult& r);  // compact JSON stored in the user's history
 String bleInfo(const dsp::BpCalibration& cal);
 String vitals(const Vitals& v);
-String session(const SessionView& s);
+String session(const SessionView& s, bool mine);
 String result(const RiskResult& r, bool include_inputs);
 String calibration(const dsp::BpCalibration& c);
 String gain(const EcgGain& g);
@@ -153,7 +172,8 @@ inline void writeGain(JsonObject o, const EcgGain& g) {
   o["method"] = gainMethodName(g.method);
 }
 
-inline void writeSession(JsonObject o, const SessionView& s) {
+inline void writeSession(JsonObject o, const SessionView& s, bool mine) {
+  o["mine"] = mine;
   o["state"] = stateName(s.state);
   o["mode"] = modeName(s.mode);
   setNum(o, "progress", s.progress, 3);
@@ -234,6 +254,10 @@ inline void writeResult(JsonObject o, const RiskResult& r, bool include_inputs) 
   if (r.note[0]) o["note"] = r.note;
   o["windows_ok"] = e.n_good;
   o["windows_total"] = e.n_windows;
+  o["borderline"] = e.borderline;
+  setNum(o, "score_spread", e.score_max - e.score_min, 4);
+  o["latency_ms"] = e.latency_ms;
+  if (r.t_epoch > 0) o["t"] = r.t_epoch;
   JsonArray wins = o["windows"].to<JsonArray>();
   int clipped = 0;
   for (int w = 0; w < e.n_windows; ++w) {
@@ -284,6 +308,9 @@ inline void writeResult(JsonObject o, const RiskResult& r, bool include_inputs) 
   o["compute_ms"] = e.compute_us / 1000;
 
   JsonArray w = o["warnings"].to<JsonArray>();
+  if (e.borderline)
+    w.add("Borderline: the 10-s windows fell on both sides of a risk-tier boundary (the median was used); "
+          "repeat the measurement to confirm");
   if (e.role == dgx::ModelRole::kFallback)
     w.add("The ECG gain is not calibrated, so the gain-invariant fallback model was used (ECG amplitudes ignored)");
   if (e.role == dgx::ModelRole::kEcgOnly)
@@ -316,6 +343,9 @@ inline bool readBool(JsonVariantConst v, bool fallback) {
 }
 
 inline float readNum(JsonVariantConst v) { return v.is<float>() ? v.as<float>() : NAN; }
+
+// Browser clock (Date.now(), ~1.7e12 ms): read as double, a float would be off by up to a minute.
+inline double readEpochMs(JsonVariantConst v) { return v.is<double>() ? v.as<double>() : NAN; }
 
 inline Command invalid(const char* msg) {
   Command c;
@@ -370,6 +400,27 @@ inline Command parseCommand(const char* data, size_t len) {
     if (!(c.gain >= ECG_GAIN_MIN && c.gain <= ECG_GAIN_MAX)) return invalid("gain must be 500-2000");
   } else if (!std::strcmp(cmd, "clear_gain")) {
     c.type = CommandType::kClearGain;
+  } else if (!std::strcmp(cmd, "register") || !std::strcmp(cmd, "login")) {
+    c.type = !std::strcmp(cmd, "register") ? CommandType::kRegister : CommandType::kLogin;
+    const char* u = doc["username"] | "";
+    const char* pw = doc["password"] | "";
+    if (std::strlen(u) >= sizeof(c.username) || std::strlen(pw) >= sizeof(c.password)) return invalid("Username or password too long");
+    for (size_t i = 0; u[i]; ++i) c.username[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(u[i])));
+    c.username[std::strlen(u)] = '\0';
+    std::snprintf(c.password, sizeof(c.password), "%s", pw);
+    c.now_ms = readEpochMs(doc["now"]);
+  } else if (!std::strcmp(cmd, "auth")) {
+    c.type = CommandType::kAuth;
+    std::snprintf(c.token, sizeof(c.token), "%s", doc["token"] | "");
+    c.now_ms = readEpochMs(doc["now"]);
+  } else if (!std::strcmp(cmd, "logout")) {
+    c.type = CommandType::kLogout;
+  } else if (!std::strcmp(cmd, "delete_account")) {
+    c.type = CommandType::kDeleteAccount;
+    std::snprintf(c.password, sizeof(c.password), "%s", doc["password"] | "");
+  } else if (!std::strcmp(cmd, "history")) {
+    c.type = CommandType::kHistory;
+    c.limit = doc["limit"] | HISTORY_SEND_RESULTS;
   } else if (!std::strcmp(cmd, "profile")) {
     c.type = CommandType::kProfile;
     UserProfile& p = c.profile;
@@ -404,11 +455,18 @@ inline String hello(const HelloInfo& info) {
   doc["type"] = "hello";
   doc["device"] = DIAGNOSTIX_DEVICE_NAME;
   doc["firmware"] = DIAGNOSTIX_FIRMWARE_VERSION;
+  JsonObject auth = doc["auth"].to<JsonObject>();
+  auth["signed_in"] = info.username != nullptr;
+  if (info.username) auth["username"] = info.username;
+  auth["users"] = info.user_count;
   JsonObject stream = doc["stream"].to<JsonObject>();
   stream["ecg_fs"] = ECG_SAMPLE_RATE_HZ / ECG_STREAM_DECIMATION;
-  stream["ecg_unit"] = "mV at the ADC";
+  stream["ecg_unit"] = "mV, filtered for display";
   stream["ppg_fs"] = PPG_SAMPLE_RATE_HZ / PPG_STREAM_DECIMATION;
   writeModels(doc["model"].to<JsonObject>(), info.model_self_test);
+  writeSession(doc["session"].to<JsonObject>(), info.session, info.session_mine);
+  writeGain(doc["ecg_gain"].to<JsonObject>(), *info.gain);
+  if (!info.username) return finish(doc);  // personal data only after sign-in
 
   if (info.profile && info.profile->valid) {
     writeProfile(doc["profile"].to<JsonObject>(), *info.profile);
@@ -416,14 +474,62 @@ inline String hello(const HelloInfo& info) {
     doc["profile"] = nullptr;
   }
   writeCalibration(doc["calibration"].to<JsonObject>(), *info.calibration);
-  writeGain(doc["ecg_gain"].to<JsonObject>(), *info.gain);
-  writeSession(doc["session"].to<JsonObject>(), info.session);
   writeAlert(doc["alert"].to<JsonObject>(), *info.alert);
   if (info.last_result) {
     writeResult(doc["last_result"].to<JsonObject>(), *info.last_result, true);
   } else {
     doc["last_result"] = nullptr;
   }
+  return finish(doc);
+}
+
+inline String auth(bool ok, const char* username, const char* token, const char* message) {
+  JsonDocument doc;
+  doc["type"] = "auth";
+  doc["ok"] = ok;
+  if (username) doc["username"] = username;
+  if (token) doc["token"] = token;
+  if (message) doc["message"] = message;
+  return finish(doc);
+}
+
+inline String history(const String& results_json_array) {
+  return String("{\"type\":\"history\",\"results\":") + results_json_array + "}";
+}
+
+inline String windowProgress(int index, int of, const dgx::WindowResult& w) {
+  JsonDocument doc;
+  JsonObject o = doc.to<JsonObject>();
+  o["type"] = "window";
+  o["index"] = index;
+  o["of"] = of;
+  o["status"] = dgx::windowStatusName(w.status);
+  o["beats"] = w.features.n_beats;
+  setNum(o, "hr", w.features.value[dgx::F_HR_MEAN_BPM], 1);
+  o["sqi"] = w.features.sqi_ok;
+  return finish(doc);
+}
+
+inline String resultLine(const RiskResult& r) {
+  const dgx::RiskEstimate& e = r.est;
+  JsonDocument doc;
+  JsonObject o = doc.to<JsonObject>();
+  o["id"] = r.id;
+  if (r.t_epoch > 0) o["t"] = r.t_epoch;
+  o["tier"] = dgx::tierName(e.tier);
+  o["model"] = dgx::roleName(e.role);
+  setNum(o, "risk", e.risk, 4);
+  setNum(o, "score", e.score, 4);
+  o["borderline"] = e.borderline;
+  o["windows_ok"] = e.n_good;
+  o["windows_total"] = e.n_windows;
+  setNum(o, "hr", e.summary[dgx::F_HR_MEAN_BPM], 1);
+  setNum(o, "qtc_ms", e.summary[dgx::F_QTC_PEAK_MS], 0);
+  setNum(o, "rmssd_ms", e.summary[dgx::F_RMSSD_MS], 1);
+  setNum(o, "sbp", r.sbp, 0);
+  setNum(o, "dbp", r.dbp, 0);
+  setNum(o, "spo2", r.summary.spo2, 1);
+  o["latency_ms"] = e.latency_ms;
   return finish(doc);
 }
 
@@ -460,11 +566,11 @@ inline String vitals(const Vitals& v) {
   return finish(doc);
 }
 
-inline String session(const SessionView& s) {
+inline String session(const SessionView& s, bool mine) {
   JsonDocument doc;
   JsonObject o = doc.to<JsonObject>();
   o["type"] = "session";
-  writeSession(o, s);
+  writeSession(o, s, mine);
   return finish(doc);
 }
 
